@@ -561,7 +561,12 @@ for file in "${files[@]}"; do
 done
 
 # Check contract templates
-templates=("templates/creative-brief.md" "templates/parameter-spec.md" "templates/architecture.md" "templates/plan.md")
+templates=(
+  ".claude/skills/plugin-ideation/assets/creative-brief-template.md"
+  ".claude/skills/ui-mockup/assets/parameter-spec-template.md"
+  ".claude/skills/plugin-workflow/assets/architecture-template.md"
+  ".claude/skills/plugin-workflow/assets/plan-template.md"
+)
 for template in "${templates[@]}"; do
   ls -la "$template" 2>/dev/null || echo "✗ $template missing"
 done
@@ -583,7 +588,7 @@ Phase 0 is COMPLETE when:
 
 1. All directories exist (verified via automated test)
 2. `.claude/CLAUDE.md` exists with navigation under 300 words
-3. All 4 contract templates exist in `templates/` directory
+3. All 4 contract templates exist in skill assets/ directories
 4. `PLUGINS.md` exists with complete state legend and entry template
 5. All 5 slash command files exist in `.claude/commands/` with frontmatter
 6. `.gitignore` excludes session state, build artifacts, logs, and backups
@@ -637,7 +642,7 @@ Phase 0 is COMPLETE when:
 
 **Mitigation**:
 - Test with `git status` - should NOT show `build/`, `logs/`, `backups/`, `.continue-here.md`
-- Test with `git status` - SHOULD show `.claude/`, `templates/`, `PLUGINS.md`
+- Test with `git status` - SHOULD show `.claude/`, `PLUGINS.md`
 - Use `git check-ignore -v [file]` to debug exclusions
 
 ### Issue 5: Directory structure doesn't match later phase expectations

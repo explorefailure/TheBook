@@ -101,7 +101,7 @@ Templates distributed to skill-specific `assets/` directories:
 
 - [ ] All directories exist
 - [ ] CLAUDE.md exists with navigation (~200 words)
-- [ ] All 4 contract templates exist in `templates/`
+- [ ] All 4 contract templates exist in skill assets/ directories
 - [ ] PLUGINS.md exists with status legend
 - [ ] .gitignore excludes logs/, backups/, build/
 
@@ -665,7 +665,7 @@ Located: `.claude/skills/ui-mockup/SKILL.md`
 
 ### WebView Code Templates
 
-Located: `templates/`
+Located: `.claude/skills/ui-mockup/assets/webview-templates/`
 
 - `PluginEditor-webview.h` - Header with CORRECT member order
 - `PluginEditor-webview.cpp` - Implementation with resource provider
@@ -684,20 +684,21 @@ private:
 
 ### UI Design Rules
 
-Located: `templates/ui-design-rules.md`
+Located: `.claude/skills/ui-mockup/references/ui-design-rules.md`
 
 - CSS constraints (use `100%`, NOT `100vh`)
 - Native feel patterns (disable text selection, right-click)
 - Resource provider requirements (JUCE 8, no data URLs)
 - Sizing strategies (fixed vs resizable)
 
-### UI Template Library
+### UI Aesthetic Library
 
-Located: `.claude/ui-templates/`
+Located: `.claude/aesthetics/`
 
-- `vintage-hardware.yaml` - Skeuomorphic design
-- `modern-minimal.yaml` - Clean, contemporary
-- `analog-modular.yaml` - Modular synthesizer aesthetic
+User-created aesthetic library managed by ui-template-library skill:
+- Aesthetics saved from completed mockups
+- Reusable across different plugins
+- Includes visual system (colors, typography, controls) without layout specifics
 
 ### gui-agent WebView Integration
 
@@ -738,8 +739,8 @@ Update foundation-agent CMakeLists.txt generation:
 **Verification:**
 
 - [ ] ui-mockup skill has complete two-phase workflow
-- [ ] Template yaml files exist in `.claude/ui-templates/`
-- [ ] ui-design-rules.md documents all constraints
+- [ ] ui-design-rules.md exists in skill references/
+- [ ] WebView code templates exist in skill assets/
 - [ ] WebView code templates exist with CORRECT member order
 - [ ] gui-agent uses WebView templates
 - [ ] Member order enforced in templates

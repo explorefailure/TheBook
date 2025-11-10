@@ -312,6 +312,37 @@ Phase plans are executable instructions, not historical records. If someone foll
 
 ---
 
+## Additional Fixes (Round 2)
+
+After Explore subagent audit, fixed 5 additional inconsistencies:
+
+### 1. procedures/skills/ui-template-library.md
+- Changed `.templates/ui/` → `.claude/aesthetics/` (7 occurrences)
+- **Rationale**: User-created aesthetic library should be in `.claude/` structure, not deprecated `/templates/`
+
+### 2. ROADMAP.md (Phase 6 section)
+- Line 104: `templates/` → `skill assets/ directories`
+- Line 668: `templates/` → `.claude/skills/ui-mockup/assets/webview-templates/`
+- Line 687: `templates/ui-design-rules.md` → `.claude/skills/ui-mockup/references/ui-design-rules.md`
+- Line 696: `.claude/ui-templates/` → `.claude/aesthetics/` (clarified as user aesthetic library)
+
+### 3. plan/phase-0-plan.md
+- Line 564-569: Updated template verification script paths to skill assets
+- Line 586: Success criteria updated to reference skill assets
+- Line 640: Removed `templates/` from git status test expectations
+
+### 4. architecture/12-webview-integration-design.md
+- Line 42-49: Changed `.claude/ui-templates/` → `.claude/aesthetics/` with proper structure showing manifest.json and aesthetic directories
+
+### Key Clarification Made
+
+**UI Aesthetic System Structure:**
+- **System-provided templates**: Stored in `.claude/skills/ui-mockup/assets/` (webview boilerplate, design rules)
+- **User-created aesthetics**: Stored in `.claude/aesthetics/` (saved visual systems from completed mockups)
+- This distinction eliminates confusion between system resources and user library
+
+---
+
 ## Conclusion
 
 All critical documentation has been updated to reflect:

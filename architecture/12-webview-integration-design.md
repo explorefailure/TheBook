@@ -39,13 +39,14 @@ Plugin loads, WebView renders HTML from embedded zip
 - Platform-specific considerations
 - Performance guidelines
 
-**2. ui-templates/** - Pre-configured starting points
+**2. Aesthetic Library** - User-created visual systems
 ```
-.claude/ui-templates/
-├── vintage-hardware.yaml
-├── modern-minimal.yaml
-├── analog-modular.yaml
-└── [user-custom-templates]/
+.claude/aesthetics/
+├── manifest.json
+└── [aesthetic-id]/
+    ├── aesthetic.yaml      # Visual system (colors, typography, controls)
+    ├── preview.html        # Visual reference
+    └── metadata.json       # Aesthetic info
 ```
 
 **Template structure:**

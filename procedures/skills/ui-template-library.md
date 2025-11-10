@@ -87,11 +87,11 @@ How would you like to start?
 
 ## Template Storage
 
-**Location:** `.templates/ui/`
+**Location:** `.claude/aesthetics/`
 
 **Structure:**
 ```
-.templates/ui/
+.claude/aesthetics/
 ├── manifest.json                   # Aesthetic registry
 └── [aesthetic-id]/
     ├── aesthetic.yaml              # Visual system definition
@@ -255,7 +255,7 @@ suggested_window:
    - Demonstrates spacing and effects
    - Visual reference only (not used for generation)
 
-7. **System saves to `.templates/ui/[aesthetic-id]/`**
+7. **System saves to `.claude/aesthetics/[aesthetic-id]/`**
 
 8. **System updates manifest.json**
 
@@ -264,7 +264,7 @@ suggested_window:
    ✓ Aesthetic saved: "Warm Vintage Tape"
 
    This aesthetic can be applied to any plugin regardless of parameter count.
-   Preview: .templates/ui/warm-vintage-tape/preview.html
+   Preview: .claude/aesthetics/warm-vintage-tape/preview.html
    ```
 
 ### What Gets Extracted
@@ -499,7 +499,7 @@ UI Aesthetic Library (3 aesthetics):
    Created: 2025-11-09 from HardClipper
    Used in: HardClipper, DistortionFX
 
-Preview: Open .templates/ui/[aesthetic-id]/preview.html
+Preview: Open .claude/aesthetics/[aesthetic-id]/preview.html
 ```
 
 ### Delete Aesthetic
@@ -527,8 +527,8 @@ Preview: Open .templates/ui/[aesthetic-id]/preview.html
 ## Integration
 
 ### Reads from:
-- `.templates/ui/manifest.json` - Aesthetic registry
-- `.templates/ui/[aesthetic-id]/aesthetic.yaml` - Visual system
+- `.claude/aesthetics/manifest.json` - Aesthetic registry
+- `.claude/aesthetics/[aesthetic-id]/aesthetic.yaml` - Visual system
 
 ### Used by:
 - `ui-mockup` skill - Offers aesthetics at start, saves after creation
@@ -537,8 +537,8 @@ Preview: Open .templates/ui/[aesthetic-id]/preview.html
 - `ui-mockup` skill - After applying aesthetic, offers to iterate
 
 ### Creates:
-- `.templates/ui/manifest.json` - First time aesthetic is saved
-- `.templates/ui/[aesthetic-id]/` directory per aesthetic
+- `.claude/aesthetics/manifest.json` - First time aesthetic is saved
+- `.claude/aesthetics/[aesthetic-id]/` directory per aesthetic
 
 ## Best Practices
 
