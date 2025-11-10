@@ -290,22 +290,7 @@ void [PluginName]AudioProcessorEditor::resized()
 - Placeholder text for Stage 2
 - Empty layout (WebView added in Stage 5)
 
-### 7. Configure Build System
-
-Create build directory and configure with Ninja:
-
-```bash
-cd plugins/[PluginName]
-mkdir -p build
-cd build
-cmake -G Ninja ..
-```
-
-**Error handling:**
-- If CMake configuration fails: Capture error, return in report
-- If JUCE not found: Check JUCE path (../../JUCE)
-
-### 8. Build Project
+### 7. Build Project
 
 Invoke the build automation script:
 
@@ -321,7 +306,7 @@ cd plugins/[PluginName]
 
 **Do NOT install yet** (--no-install flag). Installation happens in Stage 6.
 
-### 9. Self-Validation
+### 8. Self-Validation
 
 After build completes, verify:
 
@@ -342,7 +327,7 @@ After build completes, verify:
 
 **If any checks fail:** Set status="failure", document issue in report
 
-### 10. Return Report
+### 9. Return Report
 
 Generate JSON report in this exact format:
 
