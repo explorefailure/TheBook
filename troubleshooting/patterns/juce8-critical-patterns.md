@@ -743,11 +743,85 @@ Review this file before:
 
 ## References
 
+## 18. macOS Plugin Code Signing & Cache Management (ALWAYS REQUIRED)
+
+### ❌ WRONG (Will cause plugins to not load or show old code)
+```bash
+# Building and installing without proper signing/cache clearing
+cmake --build build --target MyPlugin_VST3 MyPlugin_AU
+cp -R build/.../MyPlugin.vst3 ~/Library/Audio/Plug-Ins/VST3/
+cp -R build/.../MyPlugin.component ~/Library/Audio/Plug-Ins/Components/
+
+# OR: Using --deep flag when re-signing (corrupts binary!)
+codesign --force --deep --sign - ~/Library/Audio/Plug-Ins/VST3/MyPlugin.vst3
+
+# Expecting DAW to see changes without clearing caches
+# (Launch Ableton and wonder why plugin doesn't update)
+```
+
+### ✅ CORRECT
+```bash
+# Step 1: Build plugins
+cmake --build build --target MyPlugin_VST3 MyPlugin_AU
+
+# Step 2: Remove old versions
+rm -rf ~/Library/Audio/Plug-Ins/VST3/MyPlugin.vst3
+rm -rf ~/Library/Audio/Plug-Ins/Components/MyPlugin.component
+
+# Step 3: Install fresh from build artifacts
+cp -R build/.../MyPlugin.vst3 ~/Library/Audio/Plug-Ins/VST3/
+cp -R build/.../MyPlugin.component ~/Library/Audio/Plug-Ins/Components/
+
+# Step 4: Sign WITHOUT --deep flag (prevents corruption)
+codesign --force --sign - ~/Library/Audio/Plug-Ins/VST3/MyPlugin.vst3
+codesign --force --sign - ~/Library/Audio/Plug-Ins/Components/MyPlugin.component
+
+# Step 5: Verify signatures are valid
+codesign --verify --deep --strict ~/Library/Audio/Plug-Ins/VST3/MyPlugin.vst3
+codesign --verify --deep --strict ~/Library/Audio/Plug-Ins/Components/MyPlugin.component
+
+# Step 6: Nuclear cache clear
+killall "Ableton Live 12 Suite" "Logic Pro" 2>/dev/null
+rm ~/Library/Preferences/Ableton/Live*/PluginScanner.txt 2>/dev/null
+rm -rf ~/Library/Caches/AudioUnitCache 2>/dev/null
+killall -9 AudioComponentRegistrar 2>/dev/null
+
+# Step 7: System restart (required for AudioComponentRegistrar)
+sudo reboot
+```
+
+**Why:** macOS has multiple layers of plugin caching and validation:
+
+1. **Code signing validation**: Invalid signatures cause "sealed resource is missing or invalid" error
+2. **DAW plugin scanner cache**: Caches plugin info, doesn't reload on simple file change
+3. **macOS Audio Unit cache**: System-level cache of AU components
+4. **AudioComponentRegistrar**: Process that holds plugin registry, persists across kills
+
+**Critical mistakes:**
+
+- **Using `codesign --deep`**: Modifies nested bundle contents, changing binary hash and corrupting plugin
+- **Not clearing caches**: DAW loads cached old version even with new binary
+- **Not restarting**: AudioComponentRegistrar cache survives process kills
+
+**Check DAW scanner logs for errors:**
+```bash
+# Ableton
+tail -50 ~/Library/Preferences/Ableton/Live*/PluginScanner.txt | grep -i error
+
+# Logic Pro
+tail -50 ~/Library/Logs/AudioUnitHosting/Logic*.log | grep -i error
+```
+
+**Documented in:** `troubleshooting/validation-problems/vst3-invalid-signature-plugin-cache-FlutterVerb-20251111.md`
+
+---
+
 All patterns documented with full context in:
 - `troubleshooting/build-failures/`
 - `troubleshooting/runtime-issues/`
 - `troubleshooting/api-usage/`
 - `troubleshooting/gui-issues/`
+- `troubleshooting/validation-problems/`
 
 See individual issue files for:
 - Full problem descriptions
