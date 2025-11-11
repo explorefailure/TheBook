@@ -582,6 +582,72 @@ this.paramState.valueChangedEvent.addListener(() => {
 
 ---
 
+## 16. WebView Knob Interaction - Relative Drag (ALWAYS REQUIRED)
+
+### ❌ WRONG (Absolute positioning - knob jumps to cursor)
+```javascript
+// Absolute positioning: knob tracks mouse Y-coordinate
+knob.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    startY = e.clientY;
+    startRotation = getCurrentRotation();
+});
+
+document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+
+    const deltaY = startY - e.clientY;  // Total distance from START
+    const newRotation = startRotation + deltaY;  // Proportional to cursor position
+    setRotation(newRotation);
+});
+```
+
+**Result:** Knob jumps to match cursor Y-position. Unnatural, imprecise interaction. User must move mouse to exact target position instead of dragging incrementally.
+
+### ✅ CORRECT (Relative drag - industry standard)
+```javascript
+// Relative drag: knob increments based on frame-to-frame movement
+let rotation = 0;
+let lastY = 0;
+
+knob.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    lastY = e.clientY;  // Store CURRENT position, not start
+});
+
+document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+
+    const deltaY = lastY - e.clientY;  // Distance since LAST FRAME
+    rotation += deltaY * 0.5;  // Increment rotation (sensitivity factor)
+    rotation = Math.max(-135, Math.min(135, rotation));
+
+    setRotation(rotation);
+    lastY = e.clientY;  // Update for next frame
+});
+```
+
+**Why:**
+- **Frame-delta pattern:** Calculates movement since last frame, not since initial click
+- **Incremental updates:** Adds to current rotation rather than replacing it
+- **Natural feel:** Drag up = increase, drag down = decrease (proportional to drag distance)
+- **Cursor position irrelevant:** Can drag infinitely, not bound to cursor location
+- **Industry standard:** Pro Tools, Logic, Ableton, all professional VST/AU plugins use this
+
+**Key differences:**
+- `lastY` (previous frame) NOT `startY` (initial click)
+- `rotation += deltaY` (increment) NOT `rotation = startRotation + deltaY` (replace)
+- `lastY = e.clientY` (update tracking each frame)
+
+**Common mistake:**
+Using total distance from start point: `startY - e.clientY` creates absolute positioning where knob rotation directly maps to mouse Y-coordinate.
+
+**When:** ALL WebView knob/rotary controls
+
+**Documented in:** `troubleshooting/gui-issues/absolute-knob-drag-webview-20251111.md`
+
+---
+
 ## Usage Instructions
 
 ### For Subagents (foundation-agent, shell-agent, dsp-agent, gui-agent)
