@@ -54,22 +54,22 @@ target_compile_definitions(FlutterVerb
         JUCE_VST3_CAN_REPLACE_VST2=0
 )
 
-# WebView UI Resources (commented out until Stage 5)
-# juce_add_binary_data(FlutterVerb_UIResources
-#     SOURCES
-#         Source/ui/public/index.html
-#         Source/ui/public/js/juce/index.js
-#         Source/ui/public/js/juce/check_native_interop.js
-# )
-#
-# target_link_libraries(FlutterVerb
-#     PRIVATE
-#         FlutterVerb_UIResources
-# )
+# WebView UI Resources (Stage 5 - Phase 5.1)
+juce_add_binary_data(FlutterVerb_UIResources
+    SOURCES
+        Source/ui/public/index.html
+        Source/ui/public/js/juce/index.js
+        Source/ui/public/js/juce/check_native_interop.js
+)
 
-# WebView support (commented out until Stage 5)
-# target_compile_definitions(FlutterVerb
-#     PUBLIC
-#         JUCE_WEB_BROWSER=1
-#         JUCE_USE_CURL=0
-# )
+target_link_libraries(FlutterVerb
+    PRIVATE
+        FlutterVerb_UIResources
+)
+
+# WebView support (Stage 5 - Phase 5.1)
+target_compile_definitions(FlutterVerb
+    PUBLIC
+        JUCE_WEB_BROWSER=1
+        JUCE_USE_CURL=0
+)

@@ -30,6 +30,9 @@ public:
     void getStateInformation(juce::MemoryBlock& destData) override;
     void setStateInformation(const void* data, int sizeInBytes) override;
 
+    // Public accessor for APVTS (required for WebView parameter binding)
+    juce::AudioProcessorValueTreeState& getAPVTS() { return parameters; }
+
 private:
     // DSP Components (declare BEFORE parameters for initialization order)
     juce::dsp::ProcessSpec spec;
