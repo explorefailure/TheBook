@@ -10,14 +10,19 @@
 
 ### updatePluginStatus(pluginName, newStatus)
 
-**Purpose:** Update plugin status emoji in PLUGINS.md.
+**Purpose:** Update plugin status emoji in PLUGINS.md after each stage checkpoint.
 
-**Valid statuses:**
-- `💡 Ideated` - Creative brief exists, no Source/
-- `🚧 Stage N` - In development (with stage number)
-- `🚧 Stage N.M` - In development (with stage and phase)
+**Valid statuses for plugin-workflow (stages 2-6):**
+- `🚧 Stage 2` - Foundation in progress
+- `🚧 Stage 3` - Shell in progress
+- `🚧 Stage 4` - DSP in progress
+- `🚧 Stage N.M` - Phased implementation (stage.phase)
+- `🚧 Stage 5` - GUI in progress
+- `🚧 Stage 6` - Validation in progress
 - `✅ Working` - Stage 6 complete, not installed
 - `📦 Installed` - Deployed to system folders
+
+**Note:** Statuses `💡 Ideated` and `🚧 Stage 0-1` are managed by plugin-planning skill.
 
 **Implementation:**
 1. Read PLUGINS.md
@@ -25,6 +30,8 @@
 3. Update `**Status:**` line with new emoji and text
 4. Validate transition is legal (see validateTransition below)
 5. Write back to PLUGINS.md
+
+**CRITICAL:** This must be called AFTER each subagent completes and before presenting decision menu.
 
 **Example:**
 ```markdown
@@ -84,12 +91,15 @@
 
 ### validateTransition(currentStatus, newStatus)
 
-**Purpose:** Enforce legal state machine transitions.
+**Purpose:** Enforce legal state machine transitions for plugin-workflow (stages 2-6).
 
-**Legal transitions:**
+**Legal transitions for plugin-workflow:**
 ```
-💡 Ideated → 🚧 Stage 0 (start workflow)
-🚧 Stage N → 🚧 Stage N+1 (sequential stages)
+🚧 Stage 1 → 🚧 Stage 2 (start implementation after planning)
+🚧 Stage N → 🚧 Stage N+1 (sequential stages 2-6)
+🚧 Stage N → 🚧 Stage N.M (enter phased implementation)
+🚧 Stage N.M → 🚧 Stage N.M+1 (next phase within stage)
+🚧 Stage N.M → 🚧 Stage N+1 (complete phased stage)
 🚧 Stage 6 → ✅ Working (validation complete)
 ✅ Working → 📦 Installed (install plugin)
 📦 Installed → 🚧 Improving (start improvement)
@@ -98,10 +108,12 @@
 
 **Illegal transitions:**
 ```
-💡 → ✅ (can't skip implementation)
-🚧 Stage 2 → 🚧 Stage 5 (can't skip stages)
-✅ Working → 💡 (can't go backward)
+🚧 Stage 2 → 🚧 Stage 5 (can't skip stages 3-4)
+🚧 Stage 4 → 🚧 Stage 2 (can't go backward)
+✅ Working → 🚧 Stage 3 (use /improve instead)
 ```
+
+**Note:** Transitions involving `💡 Ideated` and `🚧 Stage 0-1` are managed by plugin-planning skill.
 
 **Implementation:**
 1. Parse current and new status
@@ -162,27 +174,51 @@ System: [Re-present decision menu afterward]
 
 ### generateContextualOptions(context)
 
-**Purpose:** Generate situation-specific menu options.
+**Purpose:** Generate situation-specific menu options after subagent completion.
 
-**After Stage 0 (Research):**
+**After Stage 2 (Foundation):**
 ```javascript
 [
-  { label: "Continue to Stage 1", recommended: true },
-  { label: "Review research findings" },
-  { label: "Improve creative brief based on research" },
-  { label: "Run deeper investigation (deep-research skill)" },
+  { label: "Continue to Stage 3", recommended: true },
+  { label: "Review foundation code" },
+  { label: "Test build manually" },
+  { label: "Review CMakeLists.txt" },
   { label: "Pause here" },
   { label: "Other" }
 ]
 ```
 
-**After Stage 1 (Planning):**
+**After Stage 3 (Shell):**
 ```javascript
 [
-  { label: "Continue to Stage 2", recommended: true },
-  { label: "Review plan details" },
-  { label: "Adjust complexity assessment" },
-  { label: "Review contracts" },
+  { label: "Continue to Stage 4", recommended: true },
+  { label: "Review APVTS implementation" },
+  { label: "Test parameter automation" },
+  { label: "Load in DAW to verify" },
+  { label: "Pause here" },
+  { label: "Other" }
+]
+```
+
+**After Stage 4 (DSP):**
+```javascript
+[
+  { label: "Continue to Stage 5", recommended: true },
+  { label: "Review DSP code" },
+  { label: "Test audio processing" },
+  { label: "Run pluginval" },
+  { label: "Pause here" },
+  { label: "Other" }
+]
+```
+
+**After Stage 5 (GUI):**
+```javascript
+[
+  { label: "Continue to Stage 6", recommended: true },
+  { label: "Review WebView integration" },
+  { label: "Test parameter bindings" },
+  { label: "Show standalone UI" },
   { label: "Pause here" },
   { label: "Other" }
 ]
@@ -466,33 +502,37 @@ Call at beginning of Stage 0.
 
 ### Hard Checkpoints (MUST pause for user decision)
 
-**Stages:**
-- Stage 0: Research complete
-- Stage 1: Planning complete
+**All implementation stages are hard checkpoints:**
+- Stage 2: Foundation complete (after foundation-agent returns)
+- Stage 3: Shell complete (after shell-agent returns)
+- Stage 4: DSP complete (after dsp-agent returns)
+- Stage 5: GUI complete (after gui-agent returns)
 - Stage 6: Validation complete
 
-**Behavior:**
-1. Complete stage work
-2. Auto-commit changes
-3. Update handoff file
-4. Update PLUGINS.md
-5. Present decision menu
-6. **WAIT for user response** - do NOT auto-continue
-7. Execute user choice
+**Behavior (ENFORCED by orchestrator):**
+1. Subagent completes and returns to orchestrator
+2. Orchestrator auto-commits changes
+3. Orchestrator updates handoff file
+4. Orchestrator updates PLUGINS.md
+5. Orchestrator presents decision menu
+6. **Orchestrator WAITS for user response** - NEVER auto-continue
+7. Orchestrator executes user choice
 
-### Soft Checkpoints (can auto-continue)
+**Note:** Stages 0-1 checkpoints are managed by plugin-planning skill.
+
+### Soft Checkpoints (can auto-continue with user permission)
 
 **Phases within complex stages (complexity ≥3):**
-- Stage 4.1, 4.2, 4.3: DSP phases
-- Stage 5.1, 5.2: GUI phases
+- Stage 4.1, 4.2, 4.3: DSP phases (managed by dsp-agent)
+- Stage 5.1, 5.2: GUI phases (managed by gui-agent)
 
 **Behavior:**
-1. Complete phase work
-2. Auto-commit changes
-3. Update handoff file
-4. Present decision menu with "Continue to next phase" as recommended option
-5. If user chooses continue: proceed to next phase
-6. If user chooses pause: stop and preserve state
+1. Subagent completes phase
+2. Subagent auto-commits changes
+3. Subagent updates handoff file with phase info
+4. Subagent presents decision menu: "Continue to next phase" (recommended)
+5. If user chooses continue: subagent proceeds to next phase
+6. If user chooses pause: subagent returns to orchestrator
 
 ### Decision Checkpoints
 
@@ -502,7 +542,7 @@ Call at beginning of Stage 0.
 - Manual pause requests
 
 **Behavior:**
-1. Update handoff with current context
+1. Subagent or orchestrator updates handoff with current context
 2. Present situation-specific menu
 3. Wait for user choice
 4. Execute chosen path
@@ -522,21 +562,23 @@ If user paused and says "resume automation" or chooses to continue:
 
 ## Stage Boundary Protocol
 
-**At every stage completion:**
+**At every stage completion (enforced by orchestrator):**
 
-1. Show completion statement:
+1. **Subagent returns** to orchestrator with completion status
+
+2. **Orchestrator shows completion statement:**
 
 ```
 ✓ Stage [N] complete: [description]
 ```
 
-2. Run automated tests (Stages 4, 5 only):
+3. **Orchestrator runs automated tests** (Stages 4, 5 only):
 
    - Invoke plugin-testing skill
    - If fail: STOP, show results, wait for fixes
    - If pass: Continue
 
-3. Auto-commit:
+4. **Orchestrator auto-commits:**
 
 ```bash
 git add [files]
@@ -544,15 +586,27 @@ git add [files]
 # For complex: feat: [Plugin] Stage [N.M] - [phase description]
 ```
 
-4. Update `.continue-here.md` with new stage, timestamp, context
+5. **Orchestrator updates `.continue-here.md`** with new stage, timestamp, context
 
-5. Update PLUGINS.md with new status
+6. **Orchestrator updates PLUGINS.md** with new status
 
-6. Present decision menu with context-appropriate options
+7. **Orchestrator presents decision menu** with context-appropriate options
 
-7. Wait for user response
+8. **Orchestrator waits for user response**
 
-**Do NOT auto-proceed without user confirmation.**
+**CRITICAL: Orchestrator NEVER auto-proceeds to next stage without user confirmation.**
+
+**Subagent responsibilities:**
+- Complete stage work
+- Report completion status to orchestrator
+- Return control to orchestrator for checkpoint
+
+**Orchestrator responsibilities:**
+- Commit changes
+- Update state files (.continue-here.md, PLUGINS.md)
+- Present decision menu
+- Wait for user input
+- Invoke next subagent based on user choice
 
 ---
 
