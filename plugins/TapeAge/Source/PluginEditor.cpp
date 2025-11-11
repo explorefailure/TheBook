@@ -23,11 +23,11 @@ TapeAgeAudioProcessorEditor::TapeAgeAudioProcessorEditor(TapeAgeAudioProcessor& 
 
     // Initialize attachments (connect parameters to relays)
     driveAttachment = std::make_unique<juce::WebSliderParameterAttachment>(
-        *processorRef.parameters.getParameter("drive"), *driveRelay);
+        *processorRef.parameters.getParameter("drive"), *driveRelay, nullptr);
     ageAttachment = std::make_unique<juce::WebSliderParameterAttachment>(
-        *processorRef.parameters.getParameter("age"), *ageRelay);
+        *processorRef.parameters.getParameter("age"), *ageRelay, nullptr);
     mixAttachment = std::make_unique<juce::WebSliderParameterAttachment>(
-        *processorRef.parameters.getParameter("mix"), *mixRelay);
+        *processorRef.parameters.getParameter("mix"), *mixRelay, nullptr);
 
     // Add WebView to editor
     addAndMakeVisible(*webView);
@@ -93,6 +93,15 @@ TapeAgeAudioProcessorEditor::getResource(const juce::String& url)
     if (url == "/js/juce/index.js") {
         return juce::WebBrowserComponent::Resource {
             makeVector(BinaryData::index_js, BinaryData::index_jsSize),
+            juce::String("text/javascript")
+        };
+    }
+
+    // JUCE native interop checker
+    if (url == "/js/juce/check_native_interop.js") {
+        return juce::WebBrowserComponent::Resource {
+            makeVector(BinaryData::check_native_interop_js,
+                      BinaryData::check_native_interop_jsSize),
             juce::String("text/javascript")
         };
     }
