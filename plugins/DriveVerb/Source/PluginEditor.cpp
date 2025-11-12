@@ -10,6 +10,7 @@ DriveVerbAudioProcessorEditor::DriveVerbAudioProcessorEditor(DriveVerbAudioProce
     dryWetRelay = std::make_unique<juce::WebSliderRelay>("dryWet");
     driveRelay = std::make_unique<juce::WebSliderRelay>("drive");
     filterRelay = std::make_unique<juce::WebSliderRelay>("filter");
+    filterPositionRelay = std::make_unique<juce::WebToggleButtonRelay>("filterPosition");
 
     // 2️⃣ Create WebView with relays (Pattern #8 - explicit URL mapping)
     webView = std::make_unique<juce::WebBrowserComponent>(
@@ -21,6 +22,7 @@ DriveVerbAudioProcessorEditor::DriveVerbAudioProcessorEditor(DriveVerbAudioProce
             .withOptionsFrom(*dryWetRelay)
             .withOptionsFrom(*driveRelay)
             .withOptionsFrom(*filterRelay)
+            .withOptionsFrom(*filterPositionRelay)
     );
 
     // 3️⃣ Create attachments LAST (Pattern #11, #12 - THREE parameters including nullptr)
@@ -34,9 +36,14 @@ DriveVerbAudioProcessorEditor::DriveVerbAudioProcessorEditor(DriveVerbAudioProce
         *processorRef.parameters.getParameter("drive"), *driveRelay, nullptr);
     filterAttachment = std::make_unique<juce::WebSliderParameterAttachment>(
         *processorRef.parameters.getParameter("filter"), *filterRelay, nullptr);
+    filterPositionAttachment = std::make_unique<juce::WebToggleButtonParameterAttachment>(
+        *processorRef.parameters.getParameter("filterPosition"), *filterPositionRelay, nullptr);
 
     addAndMakeVisible(*webView);
     webView->goToURL(juce::WebBrowserComponent::getResourceProviderRoot());
+
+    // Start VU meter timer (30 FPS)
+    startTimerHz(30);
 
     setSize(1000, 500);
 }
@@ -55,6 +62,22 @@ void DriveVerbAudioProcessorEditor::resized()
 {
     // WebView fills entire editor
     webView->setBounds(getLocalBounds());
+}
+
+void DriveVerbAudioProcessorEditor::timerCallback()
+{
+    // Get current drive output level from processor
+    float driveLevelDB = processorRef.getDriveOutputLevel();
+
+    // Send to WebView
+    if (webView)
+    {
+        juce::String js = juce::String::formatted(
+            "window.dispatchEvent(new CustomEvent('updateVUMeter', { detail: %f }));",
+            driveLevelDB
+        );
+        webView->evaluateJavascript(js);
+    }
 }
 
 std::optional<juce::WebBrowserComponent::Resource>

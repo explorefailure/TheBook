@@ -2,7 +2,8 @@
 #include "PluginProcessor.h"
 #include <juce_gui_extra/juce_gui_extra.h>
 
-class DriveVerbAudioProcessorEditor : public juce::AudioProcessorEditor
+class DriveVerbAudioProcessorEditor : public juce::AudioProcessorEditor,
+                                       private juce::Timer
 {
 public:
     explicit DriveVerbAudioProcessorEditor(DriveVerbAudioProcessor&);
@@ -10,6 +11,8 @@ public:
 
     void paint(juce::Graphics&) override;
     void resized() override;
+
+    void timerCallback() override;  // For VU meter updates
 
 private:
     DriveVerbAudioProcessor& processorRef;
@@ -24,6 +27,7 @@ private:
     std::unique_ptr<juce::WebSliderRelay> dryWetRelay;
     std::unique_ptr<juce::WebSliderRelay> driveRelay;
     std::unique_ptr<juce::WebSliderRelay> filterRelay;
+    std::unique_ptr<juce::WebToggleButtonRelay> filterPositionRelay;
 
     // 2️⃣ WEBVIEW SECOND (depends on relays via withOptionsFrom)
     std::unique_ptr<juce::WebBrowserComponent> webView;
@@ -34,6 +38,7 @@ private:
     std::unique_ptr<juce::WebSliderParameterAttachment> dryWetAttachment;
     std::unique_ptr<juce::WebSliderParameterAttachment> driveAttachment;
     std::unique_ptr<juce::WebSliderParameterAttachment> filterAttachment;
+    std::unique_ptr<juce::WebToggleButtonParameterAttachment> filterPositionAttachment;
 
     // Helper for resource serving (Pattern #8)
     std::optional<juce::WebBrowserComponent::Resource> getResource(const juce::String& url);

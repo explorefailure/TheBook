@@ -225,7 +225,7 @@
         }
 
         /* ====================================================================
-           KNOBS SECTION (5 KNOBS ONLY - NO TOGGLE IN PHASE 5.1)
+           KNOBS SECTION (5 KNOBS + 1 TOGGLE SWITCH - PHASE 5.2)
            ==================================================================== */
 
         .knobs-section {
@@ -235,6 +235,102 @@
             align-items: flex-start;
             gap: 70px;
             padding-top: 10px;
+        }
+
+        /* Toggle switch container */
+        .toggle-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toggle-label-top {
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: #c49564;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Vertical toggle switch */
+        .vertical-toggle-switch {
+            width: 40px;
+            height: 90px;
+            background: #1a0a00;
+            border: 3px solid #3a2a1a;
+            border-radius: 20px;
+            position: relative;
+            cursor: pointer;
+            box-shadow:
+                inset 0 4px 8px rgba(0, 0, 0, 0.6),
+                0 2px 4px rgba(0, 0, 0, 0.8);
+            transition: all 0.1s ease;
+        }
+
+        .vertical-toggle-switch:hover {
+            border-color: #c49564;
+        }
+
+        .vertical-toggle-switch:active {
+            transform: scale(0.98);
+        }
+
+        /* Slider - moves vertically */
+        .vertical-toggle-slider {
+            position: absolute;
+            top: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 40px;
+            background: radial-gradient(circle at 35% 35%, #3a2a1a 0%, #2f2015 60%, #1a0a00 100%);
+            border-radius: 15px;
+            box-shadow:
+                0 4px 8px rgba(0, 0, 0, 0.8),
+                inset 0 2px 4px rgba(0, 0, 0, 0.6);
+            transition: top 0.2s ease;
+        }
+
+        /* POST state (active) - slider at bottom */
+        .vertical-toggle-switch.active .vertical-toggle-slider {
+            top: calc(100% - 44px);
+            background: radial-gradient(circle at 35% 35%, #d4a574 0%, #c49564 60%, #8b6f47 100%);
+            box-shadow:
+                0 4px 8px rgba(0, 0, 0, 0.8),
+                0 0 12px rgba(212, 165, 116, 0.4),
+                inset 0 2px 4px rgba(255, 255, 255, 0.2);
+        }
+
+        /* State labels on toggle */
+        .toggle-state-labels {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 10px 0;
+            pointer-events: none;
+        }
+
+        .toggle-state-label {
+            font-size: 8px;
+            font-weight: 600;
+            text-align: center;
+            color: #6a5a4a;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            transition: color 0.2s ease;
+        }
+
+        /* Active state label highlighting */
+        .vertical-toggle-switch:not(.active) .toggle-state-label.pre {
+            color: #d4a574;
+        }
+
+        .vertical-toggle-switch.active .toggle-state-label.post {
+            color: #d4a574;
         }
 
         .knob-container {
@@ -362,7 +458,7 @@
                 <div class="plugin-title">DRIVE VERB</div>
             </div>
 
-            <!-- Knobs Section (5 knobs only - no toggle in Phase 5.1) -->
+            <!-- Knobs Section (5 knobs + 1 toggle - Phase 5.2) -->
             <div class="knobs-section">
                 <!-- SIZE KNOB -->
                 <div class="knob-container">
@@ -400,6 +496,18 @@
                     <div class="knob-label">DRIVE</div>
                 </div>
 
+                <!-- FILTER POSITION TOGGLE (PRE/POST - Vertical) -->
+                <div class="toggle-container">
+                    <div class="toggle-label-top">FILTER</div>
+                    <div class="vertical-toggle-switch active" id="filterPositionToggle">
+                        <div class="vertical-toggle-slider"></div>
+                        <div class="toggle-state-labels">
+                            <span class="toggle-state-label pre">PRE</span>
+                            <span class="toggle-state-label post">POST</span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- FILTER KNOB -->
                 <div class="knob-container">
                     <div class="knob" id="filterKnob" data-param="filter">
@@ -418,7 +526,7 @@
         // JUCE FRONTEND LIBRARY IMPORT (Pattern #21 - ES6 module)
         // ====================================================================
 
-        import { getSliderState } from "./js/juce/index.js";
+        import { getSliderState, getToggleState } from "./js/juce/index.js";
 
         // ====================================================================
         // NATIVE APPLICATION FEEL (JavaScript)
@@ -694,6 +802,32 @@
         updateKnobVisual(filterRotatable, filterState.getNormalisedValue());
 
         // ----------------------------------------------------------------
+        // FILTER POSITION TOGGLE BINDING (Pattern #19 - getToggleState)
+        // ----------------------------------------------------------------
+
+        const filterPositionState = getToggleState("filterPosition");
+        const filterPositionToggle = document.getElementById("filterPositionToggle");
+
+        // Initialize toggle state from parameter (1.0 = POST/active)
+        const initialFilterPosition = filterPositionState.getValue();
+        if (initialFilterPosition) {
+            filterPositionToggle.classList.add("active");
+        } else {
+            filterPositionToggle.classList.remove("active");
+        }
+
+        filterPositionToggle.addEventListener("click", () => {
+            const currentState = filterPositionState.getValue();
+            filterPositionState.setValue(!currentState);
+            filterPositionToggle.classList.toggle("active", !currentState);
+        });
+
+        filterPositionState.valueChangedEvent.addListener(() => {
+            const newState = filterPositionState.getValue();
+            filterPositionToggle.classList.toggle("active", newState);
+        });
+
+        // ----------------------------------------------------------------
         // KNOB VISUAL UPDATE HELPER
         // ----------------------------------------------------------------
 
@@ -705,10 +839,65 @@
         }
 
         // ====================================================================
+        // VU METER UPDATE WITH BALLISTIC MOTION (Pattern #20)
+        // ====================================================================
+
+        const vuNeedle = document.getElementById("vuNeedle");
+        let currentNeedleAngle = -45;   // Visual state
+        let targetNeedleAngle = -45;    // Audio data
+
+        const ATTACK_SPEED = 0.4;   // Fast rise (responsive to peaks)
+        const DECAY_SPEED = 0.15;   // Slow fall (readable fallback)
+
+        // Event handler ONLY updates target
+        function updateVUMeter(dbLevel) {
+            const minDB = -20;
+            const maxDB = 3;
+            const clampedDB = Math.max(minDB, Math.min(maxDB, dbLevel));
+            const normalizedLevel = (clampedDB - minDB) / (maxDB - minDB);
+
+            targetNeedleAngle = -45 + (normalizedLevel * 90);
+        }
+
+        // Animation loop interpolates current → target
+        function animateVUMeter() {
+            // Ballistic motion: fast attack, slow decay
+            const speed = currentNeedleAngle < targetNeedleAngle ? ATTACK_SPEED : DECAY_SPEED;
+            currentNeedleAngle += (targetNeedleAngle - currentNeedleAngle) * speed;
+
+            // Update visual
+            vuNeedle.style.transform = `translateX(-50%) rotate(${currentNeedleAngle}deg)`;
+
+            // Update color based on level zones
+            const normalized = (currentNeedleAngle + 45) / 90;
+            if (normalized > 0.9) {
+                vuNeedle.style.background = 'linear-gradient(180deg, #ff6666 0%, #ff4444 100%)';
+            } else if (normalized > 0.75) {
+                vuNeedle.style.background = 'linear-gradient(180deg, #ffcc66 0%, #ffaa44 100%)';
+            } else {
+                vuNeedle.style.background = 'linear-gradient(180deg, #d4a574 0%, #c49564 100%)';
+            }
+
+            requestAnimationFrame(animateVUMeter);
+        }
+
+        // Start loop once
+        animateVUMeter();
+
+        // Listen for meter updates from C++ (real-time metering)
+        window.addEventListener("updateVUMeter", (event) => {
+            updateVUMeter(event.detail);
+        });
+
+        // Initialize based on default drive value (6dB default = -6dB output after normalization)
+        const initialDriveDB = driveState.getNormalisedValue() * 24.0;
+        updateVUMeter(initialDriveDB - 12);
+
+        // ====================================================================
         // INITIALIZATION COMPLETE
         // ====================================================================
 
-        console.log("DriveVerb UI initialized (Phase 5.1: 5 knobs + static VU meter)");
+        console.log("DriveVerb UI initialized (Phase 5.2: 5 knobs + 1 toggle + VU meter animation)");
     </script>
 </body>
 </html>

@@ -192,6 +192,23 @@ void DriveVerbAudioProcessor::applyDrive(juce::dsp::AudioBlock<float>& block, ju
 
     // Apply tanh waveshaping (tape-like saturation)
     driveShaper.process(context);
+
+    // Measure output level for VU meter (after waveshaping)
+    float maxLevel = 0.0f;
+    for (size_t channel = 0; channel < block.getNumChannels(); ++channel)
+    {
+        const float* channelData = block.getChannelPointer(channel);
+        for (size_t sample = 0; sample < block.getNumSamples(); ++sample)
+        {
+            maxLevel = std::max(maxLevel, std::abs(channelData[sample]));
+        }
+    }
+
+    // Convert to dB and store atomically
+    float levelDB = maxLevel > 0.0f
+        ? juce::Decibels::gainToDecibels(maxLevel)
+        : -60.0f;
+    driveOutputLevelDB.store(levelDB);
 }
 
 void DriveVerbAudioProcessor::applyFilter(juce::dsp::AudioBlock<float>& block, juce::dsp::ProcessContextReplacing<float>& context, float filterValue)

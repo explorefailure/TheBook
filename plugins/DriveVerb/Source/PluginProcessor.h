@@ -33,6 +33,9 @@ public:
     // Public APVTS for editor access (Pattern #11)
     juce::AudioProcessorValueTreeState parameters;
 
+    // VU meter support
+    float getDriveOutputLevel() const { return driveOutputLevelDB.load(); }
+
 private:
 
     // Parameter layout creation
@@ -52,6 +55,9 @@ private:
     // Stage 4.4: Helper methods for PRE/POST routing
     void applyDrive(juce::dsp::AudioBlock<float>& block, juce::dsp::ProcessContextReplacing<float>& context, float driveValue);
     void applyFilter(juce::dsp::AudioBlock<float>& block, juce::dsp::ProcessContextReplacing<float>& context, float filterValue);
+
+    // VU meter - drive output level
+    std::atomic<float> driveOutputLevelDB { -60.0f };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DriveVerbAudioProcessor)
 };
