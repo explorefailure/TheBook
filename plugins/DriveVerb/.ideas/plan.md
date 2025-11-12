@@ -94,7 +94,9 @@
 
 **Duration:** 25 min
 
-### Phase 4.4: PRE/POST Routing
+### Phase 4.4: PRE/POST Routing ✓
+
+**Completed:** 2025-11-12T13:00:00Z
 
 **Goal:** Add filter position switch for signal routing
 
@@ -105,12 +107,12 @@
 - POST mode: Reverb → Drive → Filter
 
 **Test Criteria:**
-- [ ] PRE mode routes filter before drive
-- [ ] POST mode routes filter after drive
-- [ ] Switching between modes changes tonal character
-- [ ] No audio dropouts or glitches when switching
-- [ ] Both modes produce audible reverb+drive+filter
-- [ ] Default preset uses POST mode
+- [x] PRE mode routes filter before drive
+- [x] POST mode routes filter after drive
+- [x] Switching between modes changes tonal character
+- [x] No audio dropouts or glitches when switching
+- [x] Both modes produce audible reverb+drive+filter
+- [x] Default preset uses POST mode
 
 **Duration:** 15 min
 
