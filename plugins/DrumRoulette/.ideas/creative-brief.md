@@ -33,19 +33,20 @@ The plugin emphasizes drum-specific parameter design: decay controls tighten or 
 | Pitch | ±12 semitones | 0 | Pitch shift in semitones |
 | Solo | Toggle | Off | Solo this channel |
 | Mute | Toggle | Off | Mute this channel |
-| Output Routing | Dropdown | Main | Route to Main or Individual Out 1-8 |
 
 ## UI Concept
 
 **Layout:** Eight vertical channel strips arranged horizontally, resembling a mixing console
-**Visual Style:** Clean, functional mixer aesthetic with clear visual hierarchy
+**Visual Style:** Vintage hardware mixer with brushed metal texture, rack-mount styling, and skeuomorphic details (inspired by LushVerb aesthetic)
 **Key Elements:**
-- LED-style trigger indicators per channel (illuminate when sound plays)
-- Color-coded lock icons (grey when unlocked, highlighted when locked)
-- Waveform thumbnails or sample names visible in each strip
-- Global randomize button prominently placed
-- Folder browser accessible per channel
-- Fader-style volume controls for tactile mixing
+- LED-style trigger indicators per channel (velocity-sensitive brightness)
+- Horizontal button row per channel: Folder | Randomize | Lock (SVG icons, no emojis)
+- Sample name display (monospace font for hardware aesthetic)
+- Centered vertical faders with horizontal Solo/Mute buttons below
+- Global randomize button prominently placed in master section
+- Master volume knob and LED output meter
+- Brushed metal texture overlay and rack mounting holes
+- Ridged knob texture for tactile realism
 
 ## Use Cases
 
@@ -77,8 +78,9 @@ The plugin emphasizes drum-specific parameter design: decay controls tighten or 
 - Standard MIDI velocity response
 
 **Audio Routing:**
+- Automatic multi-output routing (no user control)
 - Stereo main output (mix of all channels)
-- 8 individual stereo outputs (one per slot)
+- 8 individual stereo outputs (Slot 1→Out 1-2, Slot 2→Out 3-4, ..., Slot 8→Out 15-16)
 - 18 total outputs (2 main + 16 individual)
 
 **File Handling:**
@@ -92,7 +94,41 @@ The plugin emphasizes drum-specific parameter design: decay controls tighten or 
 - Lock buttons exclude specific slots from global randomization
 - True random selection (no shuffle/cycle behavior)
 
+## Design Evolution
+
+**Date:** 2025-11-12
+**Stage:** UI mockup design (v1→v4)
+
+**Changes from original vision:**
+
+1. **Visual aesthetic evolved:**
+   - Original: "Clean, functional mixer aesthetic"
+   - Final: "Vintage hardware mixer with brushed metal texture"
+   - Reason: User requested vintage hardware aesthetic during mockup iteration, provided LushVerb as reference for skeuomorphic design approach
+
+2. **Output Routing simplified:**
+   - Original: User-controllable dropdown (Main or Individual Out 1-8)
+   - Final: Automatic routing (each slot routes to consecutive stereo outputs)
+   - Reason: User requested automatic routing for streamlined workflow
+   - Impact: Removed 8 parameters, reduced complexity
+
+3. **Added polish features:**
+   - Master volume knob (UI convenience, not saved as parameter)
+   - LED output meter (visual feedback for master output level)
+   - Brushed metal texture overlay, rack mounting holes (hardware aesthetic)
+   - Ridged knob texture (tactile realism)
+
+4. **Layout refinements:**
+   - Buttons reorganized into horizontal row (Folder | Randomize | Lock) with SVG icons
+   - Faders centered in channel strips for visual balance
+   - Solo/Mute buttons moved below faders (horizontal layout, mixer-style)
+   - Symmetric horizontal padding (mathematical perfection, no dead space)
+
+**Core concept preserved:** Eight-slot drum sampler with folder-based randomization and mixer-style interface remains intact. All original use cases supported.
+
+**Final parameter count:** 73 parameters (reduced from ~81 due to automatic routing)
+
 ## Next Steps
 
-- [ ] Create UI mockup (`/dream DrumRoulette` → option 3)
+- [x] Create UI mockup (v4 finalized 2025-11-12)
 - [ ] Start implementation (`/implement DrumRoulette`)
