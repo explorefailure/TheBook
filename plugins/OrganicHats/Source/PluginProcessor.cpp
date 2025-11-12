@@ -82,7 +82,12 @@ void OrganicHatsAudioProcessor::prepareToPlay(double sampleRate, int samplesPerB
     // Prepare synthesiser with sample rate
     synth.setCurrentPlaybackSampleRate(sampleRate);
 
-    juce::ignoreUnused(samplesPerBlock);
+    // Prepare all voices for DSP processing (Phase 4.2)
+    for (int i = 0; i < synth.getNumVoices(); ++i)
+    {
+        if (auto* voice = dynamic_cast<HiHatVoice*>(synth.getVoice(i)))
+            voice->prepareToPlay(sampleRate, samplesPerBlock);
+    }
 }
 
 void OrganicHatsAudioProcessor::releaseResources()

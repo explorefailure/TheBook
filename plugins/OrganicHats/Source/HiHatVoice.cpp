@@ -5,6 +5,21 @@ HiHatVoice::HiHatVoice(juce::AudioProcessorValueTreeState& apvts)
 {
 }
 
+void HiHatVoice::prepareToPlay(double sampleRate, int samplesPerBlock)
+{
+    currentSampleRate = sampleRate;
+
+    juce::dsp::ProcessSpec spec;
+    spec.sampleRate = sampleRate;
+    spec.maximumBlockSize = static_cast<juce::uint32>(samplesPerBlock);
+    spec.numChannels = 1;  // Per-voice mono processing
+
+    toneFilter.prepare(spec);
+    noiseColorFilter.prepare(spec);
+    toneFilter.reset();
+    noiseColorFilter.reset();
+}
+
 bool HiHatVoice::canPlaySound(juce::SynthesiserSound* sound)
 {
     return dynamic_cast<HiHatSound*>(sound) != nullptr;
@@ -75,18 +90,72 @@ void HiHatVoice::renderNextBlock(juce::AudioBuffer<float>& outputBuffer,
     if (!isVoiceActive())
         return;
 
+    // Read parameters once per block (atomic reads)
+    const char* toneParamID = isClosed ? "CLOSED_TONE" : "OPEN_TONE";
+    const char* colorParamID = isClosed ? "CLOSED_NOISE_COLOR" : "OPEN_NOISE_COLOR";
+
+    float toneValue = parameters.getRawParameterValue(toneParamID)->load() / 100.0f;  // Normalize to 0.0-1.0
+    float colorValue = parameters.getRawParameterValue(colorParamID)->load() / 100.0f;
+
     for (int sample = 0; sample < numSamples; ++sample)
     {
-        // Generate white noise: range [-1.0, 1.0]
+        // 1. Generate white noise: range [-1.0, 1.0]
         float noiseSample = (noiseGenerator.nextFloat() * 2.0f) - 1.0f;
 
-        // Apply envelope
+        // 2. Apply Tone Filter (brightness control)
+        // Exponential frequency mapping: 3kHz-15kHz
+        float velocityToneMod = velocityGain * 0.3f;  // Up to +30% cutoff modulation
+        float baseFreq = 3000.0f * std::pow(5.0f, toneValue);
+        float finalCutoff = baseFreq * (1.0f + velocityToneMod);
+        finalCutoff = juce::jlimit(20.0f, 20000.0f, finalCutoff);
+
+        // Update Tone Filter coefficients (LP below 50%, HP above 50%)
+        if (toneValue < 0.5f)
+        {
+            *toneFilter.coefficients = *juce::dsp::IIR::Coefficients<float>::makeLowPass(
+                currentSampleRate, finalCutoff, 0.707f);
+        }
+        else
+        {
+            *toneFilter.coefficients = *juce::dsp::IIR::Coefficients<float>::makeHighPass(
+                currentSampleRate, finalCutoff, 0.707f);
+        }
+
+        // Process through Tone Filter
+        noiseSample = toneFilter.processSample(noiseSample);
+
+        // 3. Apply Noise Color Filter (warmth control)
+        // Bypass zone at 50% ±2%
+        if (std::abs(colorValue - 0.5f) > 0.02f)
+        {
+            // Exponential frequency mapping: 5kHz-10kHz
+            float colorFreq = 5000.0f * std::pow(2.0f, (colorValue - 0.5f) * 2.0f);
+            colorFreq = juce::jlimit(20.0f, 20000.0f, colorFreq);
+
+            // Update Noise Color Filter coefficients (LP below 50%, HP above 50%)
+            if (colorValue < 0.5f)
+            {
+                *noiseColorFilter.coefficients = *juce::dsp::IIR::Coefficients<float>::makeLowPass(
+                    currentSampleRate, colorFreq, 0.707f);
+            }
+            else
+            {
+                *noiseColorFilter.coefficients = *juce::dsp::IIR::Coefficients<float>::makeHighPass(
+                    currentSampleRate, colorFreq, 0.707f);
+            }
+
+            // Process through Noise Color Filter
+            noiseSample = noiseColorFilter.processSample(noiseSample);
+        }
+        // else: bypass (no filtering at 50%)
+
+        // 4. Apply envelope
         float envelopeSample = envelope.getNextSample();
 
-        // Apply velocity scaling
+        // 5. Apply velocity scaling
         float outputSample = noiseSample * envelopeSample * velocityGain;
 
-        // Add to output buffer (don't replace - multiple voices may be active)
+        // 6. Add to output buffer (don't replace - multiple voices may be active)
         for (int channel = 0; channel < outputBuffer.getNumChannels(); ++channel)
         {
             outputBuffer.addSample(channel, startSample + sample, outputSample);
