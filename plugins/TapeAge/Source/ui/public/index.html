@@ -253,8 +253,8 @@
             transition: transform 0.05s ease;
         }
 
-        .knob:hover {
-            transform: scale(1.005);
+        .knob:hover .knob-body {
+            border-color: #c49564;
         }
 
         .knob:active {
@@ -265,7 +265,9 @@
             width: 100%;
             height: 100%;
             border-radius: 50%;
+            border: 2px solid rgba(212, 165, 116, 0.3);
             background: radial-gradient(circle at 35% 35%, #3a2a1a 0%, #2f2015 60%, #1a0a00 100%);
+            transition: border-color 0.1s ease;
             box-shadow:
                 0 8px 16px rgba(0, 0, 0, 0.8),
                 0 4px 8px rgba(0, 0, 0, 0.6),

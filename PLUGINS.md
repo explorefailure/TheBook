@@ -25,10 +25,10 @@
 | Plugin Name | Status | Version | Last Updated |
 |-------------|--------|---------|--------------|
 | GainKnob | 📦 Installed | 1.2.3 | 2025-11-10 |
-| TapeAge | 📦 Installed | 1.0.2 | 2025-11-11 |
+| TapeAge | 📦 Installed | 1.0.3 | 2025-11-12 |
 | ClapMachine | 💡 Ideated | - | 2025-11-10 |
 | DriveVerb | 📦 Installed | 1.0.2 | 2025-11-12 |
-| FlutterVerb | 📦 Installed | 1.0.0 | 2025-11-11 |
+| FlutterVerb | 📦 Installed | 1.0.3 | 2025-11-12 |
 | LushVerb | 🚧 Stage 1 | - | 2025-11-11 |
 
 ### GainKnob
@@ -89,10 +89,10 @@ Minimalist gain, pan, and DJ-style filter utility plugin with three knobs for vo
 ### TapeAge
 
 **Status:** 📦 **Installed**
-**Version:** 1.0.2
+**Version:** 1.0.3
 **Created:** 2025-11-10
 **Completed:** 2025-11-11
-**Installed:** 2025-11-11
+**Installed:** 2025-11-12
 **Type:** Audio Effect
 
 **Description:**
@@ -132,11 +132,12 @@ Vintage tape saturator with warm saturation and musical degradation (wow/flutter
 - **2025-11-11 (v1.0.0):** Installed to system folders (VST3 + AU)
 - **2025-11-11 (v1.0.1):** Fixed parameter state persistence in Ableton (getNumPrograms() interference)
 - **2025-11-11 (v1.0.2):** Fixed WebView parameter initialization (valueChangedEvent undefined callback parameters)
+- **2025-11-12 (v1.0.3):** Fixed knob hover shake - replaced scale transform with border color change
 
 **Known Issues:**
 - None
 
-**Last Updated:** 2025-11-11
+**Last Updated:** 2025-11-12
 
 ### ClapMachine
 
@@ -270,10 +271,10 @@ Algorithmic reverb with warm tape saturation applied only to the wet signal, plu
 ### FlutterVerb
 
 **Status:** 📦 **Installed**
-**Version:** 1.0.1
+**Version:** 1.0.3
 **Created:** 2025-11-11
 **Completed:** 2025-11-11
-**Installed:** 2025-11-11
+**Installed:** 2025-11-12
 **Type:** Audio Effect (Reverb)
 **Complexity:** 5.0 (Complex)
 
@@ -347,11 +348,13 @@ Tape-driven plate reverb with extreme wow and flutter modulation for textured, a
 - **2025-11-11 (Stage 6):** Validation complete - 7 factory presets created, CHANGELOG.md generated, ready for installation
 - **2025-11-11 (v1.0.0):** Installed to system folders (VST3 + AU)
 - **2025-11-11 (v1.0.1):** Bug fixes - decay independence, drive latency compensation, age scaling, MOD_MODE toggle, VU meter
+- **2025-11-11 (v1.0.2):** Bug fixes - VU meter animation, MOD_MODE toggle UI, MOD_MODE functionality, SIZE/DECAY independence
+- **2025-11-12 (v1.0.3):** Fixed knob hover shake - replaced scale transform with border color change
 
 **Known Issues:**
 - None
 
-**Last Updated:** 2025-11-11
+**Last Updated:** 2025-11-12
 
 ### LushVerb
 

@@ -259,7 +259,8 @@ MUST execute steps in this exact order (no parallelization):
 4. Generate metadata.json (requires aesthetic ID)
 5. Generate test previews (requires aesthetic.md completion)
 6. Update manifest (requires metadata.json)
-7. Present confirmation (requires all files created)
+7. Commit changes to git (requires all files created)
+8. Present confirmation (requires git commit complete)
 </critical_sequence>
 
 <step id="1">
@@ -307,6 +308,55 @@ Read .claude/aesthetics/manifest.json, append new aesthetic entry, write updated
 </step>
 
 <step id="7">
+<instructions>
+Commit aesthetic to git using conventional format.
+</instructions>
+
+<commit_format>
+**Stage all aesthetic files:**
+
+```bash
+git add .claude/aesthetics/[aesthetic-id]/
+```
+
+**Commit with conventional format:**
+
+```bash
+git commit -m "feat(aesthetics): [aesthetic-name] - new aesthetic template
+
+Created aesthetic with [N] test previews ([preview-types])
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+```
+
+**Example:**
+
+```bash
+git add .claude/aesthetics/modern-professional-001/
+git commit -m "feat(aesthetics): Modern Professional - new aesthetic template
+
+Created aesthetic with 2 test previews (simple-compressor, complex-reverb)
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+```
+
+**If no test previews selected:**
+
+```bash
+git commit -m "feat(aesthetics): [aesthetic-name] - new aesthetic template
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+```
+</commit_format>
+</step>
+
+<step id="8">
 Present confirmation with file paths and preview open commands.
 </step>
 </phase>

@@ -122,6 +122,42 @@ MANIFEST_PATH=".claude/aesthetics/manifest.json"
 
 **NEVER append directly - always read full manifest, modify in memory, write complete file.**
 
+### Step 7.5: Commit Changes to Git
+
+**Commit aesthetic to git using conventional format:**
+
+```bash
+# Stage all aesthetic files
+git add .claude/aesthetics/$AESTHETIC_ID/
+```
+
+**Commit with conventional format:**
+
+```bash
+git commit -m "feat(aesthetics): [aesthetic-name] - saved from [source-plugin]
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+```
+
+**Example:**
+
+```bash
+git add .claude/aesthetics/vintage-hardware-001/
+git commit -m "feat(aesthetics): Vintage Hardware - saved from LushVerb
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+```
+
+**Why this step matters:**
+- Follows Plugin Freedom System checkpoint protocol (all state changes committed)
+- Prevents untracked files accumulating in `.claude/aesthetics/`
+- Maintains clean git history with conventional commit format
+- Ensures aesthetic is versioned and recoverable
+
 ### Step 8: Present Decision Menu
 
 (See main SKILL.md for decision gate and menu format)

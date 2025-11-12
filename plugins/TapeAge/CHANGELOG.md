@@ -4,6 +4,19 @@ All notable changes to TapeAge will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.0.3] - 2025-11-12
+
+### Fixed
+
+- **UI Hover Stability:** Eliminated subtle shaking when hovering over knobs
+  - **Root Cause:** `transform: scale(1.005)` in `.knob:hover` caused sub-pixel rendering recalculation in WebView, creating imperceptible but continuous layout shifts
+  - **Solution:** Replaced scale transform with border color change (matching VU meter housing behavior)
+  - **Implementation:** Added `border: 2px solid rgba(212, 165, 116, 0.3)` to `.knob-body`, hover changes to `#c49564` (gold accent)
+  - **User Impact:** Knobs now have stable, clean hover effect without visual artifacts
+  - **Technical Details:** WebView/WebBrowserComponent struggles with micro-scale transforms (<1%), causing render loop instability
+  - **Testing:** Verified across all 3 knobs (drive, age, mix)—no shake on hover, depression effect on click preserved
+  - **Backward Compatibility:** Zero impact—visual-only change, no parameter or state modifications
+
 ## [1.0.2] - 2025-11-11
 
 ### Fixed

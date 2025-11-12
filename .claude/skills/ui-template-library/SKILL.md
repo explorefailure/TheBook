@@ -87,14 +87,17 @@ The aesthetic system separates **visual design language** (colors, control styli
     <step id="7" required="true" depends_on="6">
       Update manifest.json using Read → modify → Write pattern
     </step>
-    <step id="8" required="true" depends_on="7">
+    <step id="7.5" required="true" depends_on="7">
+      Commit aesthetic to git using conventional format
+    </step>
+    <step id="8" required="true" depends_on="7.5">
       Present confirmation + decision menu
     </step>
   </critical_sequence>
 
   <state_requirement>
     <before_completion>
-      ALL steps 1-7 must complete successfully
+      ALL steps 1-7.5 must complete successfully
       IF any step fails: halt, report error, DO NOT proceed to step 8
     </before_completion>
 
@@ -104,6 +107,7 @@ The aesthetic system separates **visual design language** (colors, control styli
       - VERIFY preview.html exists
       - VERIFY metadata.json is valid JSON
       - VERIFY manifest.json updated successfully
+      - VERIFY git commit completed successfully
     </verification>
   </state_requirement>
 
