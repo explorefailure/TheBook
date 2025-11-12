@@ -27,7 +27,7 @@
 | GainKnob | 📦 Installed | 1.2.3 | 2025-11-10 |
 | TapeAge | 📦 Installed | 1.0.2 | 2025-11-11 |
 | ClapMachine | 💡 Ideated | - | 2025-11-10 |
-| DriveVerb | 🚧 Stage 2 | - | 2025-11-11 |
+| DriveVerb | 📦 Installed | 1.0.1 | 2025-11-12 |
 | FlutterVerb | 📦 Installed | 1.0.0 | 2025-11-11 |
 | LushVerb | 🚧 Stage 1 | - | 2025-11-11 |
 
@@ -190,7 +190,7 @@ Mix/Output:
 ### DriveVerb
 
 **Status:** 📦 **Installed**
-**Version:** 1.0.0
+**Version:** 1.0.1
 **Created:** 2025-11-11
 **Completed:** 2025-11-12
 **Installed:** 2025-11-12
@@ -243,6 +243,23 @@ Algorithmic reverb with warm tape saturation applied only to the wet signal, plu
 **Installation Locations:**
 - VST3: `~/Library/Audio/Plug-Ins/VST3/DriveVerb.vst3` (4.2 MB)
 - AU: `~/Library/Audio/Plug-Ins/Components/DriveVerb.component` (4.1 MB)
+
+**Lifecycle Timeline:**
+- **2025-11-11:** Creative brief completed
+- **2025-11-11 (Stage 0):** Research completed - DSP architecture documented
+- **2025-11-11 (Stage 1):** Planning - Complexity 5.0 (phased implementation)
+- **2025-11-11 (Stage 2):** Foundation - Build system operational, compiles successfully
+- **2025-11-11 (Stage 3):** Shell complete - 6 parameters implemented
+- **2025-11-11 (Stage 4.1):** Core reverb + dry/wet mixing (juce::dsp::Reverb + DryWetMixer)
+- **2025-11-11 (Stage 4.2):** Drive saturation (tanh waveshaping, 0-24dB, wet only)
+- **2025-11-11 (Stage 4.3):** DJ-style filter (IIR, exponential mapping, center bypass)
+- **2025-11-12 (Stage 4.4):** PRE/POST routing (conditional branching for filter placement)
+- **2025-11-12 (Stage 5.1):** WebView layout + 5 interactive knobs (size, decay, dryWet, drive, filter)
+- **2025-11-12 (Stage 5.2):** Toggle switch + VU meter animation (filterPosition PRE/POST, ballistic motion)
+- **2025-11-12 (Stage 5.3):** Parameter value displays + polish (real-time readouts with units)
+- **2025-11-12 (Stage 6):** Validation complete - 5 factory presets, CHANGELOG.md generated
+- **2025-11-12 (v1.0.0):** Installed to system folders (VST3 + AU)
+- **2025-11-12 (v1.0.1):** UI control reordering - dry/wet moved to end for standard mixing workflow
 
 **Known Issues:**
 - None
