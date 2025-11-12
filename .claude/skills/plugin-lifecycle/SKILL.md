@@ -274,7 +274,7 @@ This is a system-wide checkpoint protocol enforcement. Never skip this menu.
 - `/reset-to-ideation [PluginName]` → Mode 3 (Reset)
 - `/destroy [PluginName]` → Mode 4 (Destroy)
 - `/clean [PluginName]` → Interactive menu
-- `plugin-workflow` skill → After Stage 6 (offers installation)
+- `plugin-workflow` skill → After Stage 6 (auto-installs)
 - `plugin-improve` skill → After successful changes (offers reinstallation)
 - Natural language: "Install [PluginName]", "Remove [PluginName]", "Clean up [PluginName]"
 
@@ -294,9 +294,9 @@ When this skill is invoked, check the triggering context:
    - Execute installation workflow
 
 2. **From plugin-workflow** (after Stage 6 completion)
-   - Plugin name provided in handoff state
-   - Offer installation via decision menu
-   - IF user chooses install → Set mode = 1 and execute
+   - Plugin name provided in context
+   - Automatically invoked after validation completes
+   - Set mode = 1 (Installation) and execute
 
 3. **From plugin-improve** (after successful changes)
    - Plugin name in context

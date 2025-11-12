@@ -168,30 +168,48 @@ This commits:
 
 Note: `.continue-here.md` is deleted and NOT committed (workflow complete).
 
-**Decision menu:**
+7. Auto-install plugin:
+
+Invoke plugin-lifecycle skill via Skill tool:
+
+```typescript
+Skill({
+  skill: "plugin-lifecycle"
+})
+```
+
+The plugin-lifecycle skill will:
+- Verify Release binaries exist
+- Extract PRODUCT_NAME from CMakeLists.txt
+- Remove old versions
+- Copy VST3 and AU to system folders
+- Set permissions (755)
+- Clear DAW caches
+- Verify installation
+- Update PLUGINS.md status to 📦 Installed
+
+If installation fails, plugin-lifecycle will present error handling options. If successful, it returns control here.
+
+**Post-installation decision menu:**
 
 ```
-✓ Stage 6 complete: [PluginName] is ready!
+✓ Plugin installed to system folders.
 
 What's next?
-1. Install plugin to system folders (recommended)
-2. Test in DAW from build folder first
-3. Create another plugin
-4. Document this plugin
-5. Share plugin (export build)
-6. Other
+1. Test in DAW (recommended)
+2. Make improvements
+3. Create new plugin
+4. Other
 
-Choose (1-6): _
+Choose (1-4): _
 ```
 
 **Handle responses:**
 
-- Option 1 → Invoke `plugin-lifecycle` skill (Phase 1b Task 9)
-- Option 2 → Provide instructions for manual DAW testing
-- Option 3 → Exit, suggest `/dream` or `/implement`
-- Option 4 → Suggest creating README or documentation
-- Option 5 → Provide instructions for exporting builds
-- Option 6 → Ask what they'd like to do
+- Option 1 → Provide instructions for manual DAW testing
+- Option 2 → Invoke `plugin-improve` skill via Skill tool
+- Option 3 → Invoke `plugin-ideation` skill via Skill tool
+- Option 4 → Ask what they'd like to do
 
 ---
 
