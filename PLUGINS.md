@@ -30,7 +30,7 @@
 | DriveVerb | 📦 Installed | 1.0.2 | 2025-11-12 |
 | FlutterVerb | 📦 Installed | 1.0.3 | 2025-11-12 |
 | LushVerb | 🚧 Stage 1 | - | 2025-11-11 |
-| OrganicHats | ✅ Working | - | 2025-11-12 |
+| OrganicHats | 📦 Installed | 1.0.0 | 2025-11-12 |
 
 ### GainKnob
 
@@ -430,8 +430,11 @@ Stunning, lush algorithmic reverb inspired by Strymon BigSky. Four simple contro
 
 ### OrganicHats
 
-**Status:** ✅ **Working**
+**Status:** 📦 **Installed**
+**Version:** 1.0.0
 **Created:** 2025-11-12
+**Completed:** 2025-11-12
+**Installed:** 2025-11-12
 **Type:** Synth (Instrument)
 **Complexity:** 5.0 (Complex)
 
@@ -472,6 +475,12 @@ Global:
 - CR-78/808 drum machines (classic electronic character but warmer)
 - Organic analog drum machines (Jomox, Vermona)
 
+**Formats:** VST3, AU, Standalone
+
+**Installation Locations:**
+- VST3: `~/Library/Audio/Plug-Ins/VST3/OrganicHats.vst3` (3.5 MB)
+- AU: `~/Library/Audio/Plug-Ins/Components/OrganicHats.component` (3.4 MB)
+
 **Lifecycle Timeline:**
 - **2025-11-12:** Creative brief completed
 - **2025-11-12 (Stage 0):** Research completed - DSP architecture documented
@@ -484,7 +493,8 @@ Global:
 - **2025-11-12 (Stage 5.1):** WebView layout integration (600×590px, studio hardware aesthetic)
 - **2025-11-12 (Stage 5.2):** Parameter binding complete (6 parameters with ES6 modules and relative drag)
 - **2025-11-12 (Stage 5.3):** Power LED and polish (pulse animation, final styling)
-- **2025-11-12 (Stage 6):** Validation complete - Build verified, CHANGELOG created, ready for installation
+- **2025-11-12 (Stage 6):** Validation complete - Build verified, CHANGELOG created
+- **2025-11-12 (v1.0.0):** Installed to system folders (VST3 + AU)
 
 **Known Issues:**
 - None
