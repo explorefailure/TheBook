@@ -125,13 +125,15 @@ DrumRouletteAudioProcessor::DrumRouletteAudioProcessor()
         voices[slot] = voice;
         synthesiser.addVoice(voice);
 
-        // Pass parameter pointers to voice (Phase 4.2)
+        // Pass parameter pointers to voice (Phase 4.2 + 4.3)
         juce::String slotNum = juce::String(static_cast<int>(slot + 1));
         auto* attackParam = parameters.getRawParameterValue("ATTACK_" + slotNum);
         auto* decayParam = parameters.getRawParameterValue("DECAY_" + slotNum);
         auto* pitchParam = parameters.getRawParameterValue("PITCH_" + slotNum);
+        auto* tiltParam = parameters.getRawParameterValue("TILT_FILTER_" + slotNum);
+        auto* volumeParam = parameters.getRawParameterValue("VOLUME_" + slotNum);
 
-        voice->setParameterPointers(attackParam, decayParam, pitchParam);
+        voice->setParameterPointers(attackParam, decayParam, pitchParam, tiltParam, volumeParam);
     }
 
     // Add 8 sounds (one per MIDI note C1-G1)

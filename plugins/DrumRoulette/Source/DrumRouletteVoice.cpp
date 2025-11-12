@@ -18,8 +18,26 @@ void DrumRouletteVoice::setParameterPointers(std::atomic<float>* attack, std::at
 
 void DrumRouletteVoice::setCurrentPlaybackSampleRate(double newRate)
 {
+    // Store sample rate for DSP components (Phase 4.3)
+    voiceSampleRate = newRate;
+
     // Initialize ADSR with sample rate (Phase 4.2)
     envelope.setSampleRate(newRate);
+
+    // Prepare DSP components (Phase 4.3)
+    juce::dsp::ProcessSpec spec;
+    spec.sampleRate = newRate;
+    spec.maximumBlockSize = 512;  // Reasonable default for per-voice processing
+    spec.numChannels = 1;  // Per-voice is mono
+
+    lowShelfFilter.prepare(spec);
+    highShelfFilter.prepare(spec);
+    volumeGain.prepare(spec);
+
+    // Reset filter states
+    lowShelfFilter.reset();
+    highShelfFilter.reset();
+    volumeGain.reset();
 }
 
 bool DrumRouletteVoice::canPlaySound(juce::SynthesiserSound* sound)
@@ -60,6 +78,23 @@ void DrumRouletteVoice::startNote(int midiNoteNumber, float velocity, juce::Synt
     else
     {
         pitchRatio = 1.0f;  // Default: no pitch shift
+    }
+
+    // Update tilt filter coefficients (Phase 4.3)
+    if (tiltFilterParam != nullptr)
+    {
+        float tiltDb = tiltFilterParam->load();
+        float tiltGain = juce::Decibels::decibelsToGain(tiltDb);
+
+        // Low-shelf (below 1kHz): Same polarity as tilt value
+        auto lowShelfCoeffs = juce::dsp::IIR::Coefficients<float>::makeLowShelf(
+            voiceSampleRate, 1000.0f, 0.707f, tiltGain);
+        *lowShelfFilter.coefficients = *lowShelfCoeffs;
+
+        // High-shelf (above 1kHz): Opposite polarity (inverse gain)
+        auto highShelfCoeffs = juce::dsp::IIR::Coefficients<float>::makeHighShelf(
+            voiceSampleRate, 1000.0f, 0.707f, 1.0f / tiltGain);
+        *highShelfFilter.coefficients = *highShelfCoeffs;
     }
 }
 
@@ -118,10 +153,26 @@ void DrumRouletteVoice::renderNextBlock(juce::AudioBuffer<float>& outputBuffer, 
             const float sample1 = sampleBuffer.getSample(channel, intPosition + 1);
 
             // Interpolate between adjacent samples
-            const float interpolatedSample = sample0 + frac * (sample1 - sample0);
+            float interpolatedSample = sample0 + frac * (sample1 - sample0);
 
             // Apply velocity and envelope
-            const float outputValue = interpolatedSample * noteVelocity * envelopeValue;
+            float outputValue = interpolatedSample * noteVelocity * envelopeValue;
+
+            // Apply tilt filter (Phase 4.3)
+            if (tiltFilterParam != nullptr)
+            {
+                // Process single sample through filters
+                outputValue = lowShelfFilter.processSample(outputValue);
+                outputValue = highShelfFilter.processSample(outputValue);
+            }
+
+            // Apply volume control (Phase 4.3)
+            if (volumeParam != nullptr)
+            {
+                float volumeDb = volumeParam->load();
+                float volumeGainValue = juce::Decibels::decibelsToGain(volumeDb, -100.0f);
+                outputValue *= volumeGainValue;
+            }
 
             outputBuffer.addSample(channel, startSample + sample, outputValue);
         }
