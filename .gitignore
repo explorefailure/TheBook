@@ -4,6 +4,12 @@ Builds/
 logs/
 backups/
 
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
 # OS files
 .DS_Store
 
