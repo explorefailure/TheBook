@@ -13,6 +13,7 @@ Traditional plugin development demands deep expertise in C++, DSP algorithms, an
 The Plugin Freedom System removes that barrier entirely.
 
 By enabling conversational plugin development, this system:
+
 - **Democratizes creation**: Anyone with an idea can build it, regardless of technical background
 - **Prioritizes creativity**: Focus on sonic goals and UX, not implementation details
 - **Accelerates iteration**: Ideas become working plugins in hours, not weeks
@@ -30,13 +31,17 @@ All plugins compile to native VST3/AU formats compatible with any DAW (Ableton, 
 ## How It Works
 
 ### 1. Dream (`/dream`)
+
 Brainstorm plugin concepts through conversation. Describe what you want—a vintage tape delay, a granular synthesizer, a spectral freeze effect—and refine the idea into a detailed creative brief.
 
 ### 2. Plan (`/plan`)
+
 Design the plugin's parameters, architecture, and UI mockups. Create visual representations before writing any code. Iterate on the design until it feels right.
 
 ### 3. Implement (`/implement`)
+
 Transform your specifications into a fully functional plugin through an automated 7-stage workflow:
+
 - **Stage 0-1**: Research and planning (contracts)
 - **Stage 2**: Foundation (project structure, CMake, basic scaffolding)
 - **Stage 3**: Shell (APVTS, parameter management, state)
@@ -45,14 +50,17 @@ Transform your specifications into a fully functional plugin through an automate
 - **Stage 6**: Validation (automated testing, pluginval)
 
 ### 4. Deploy & Iterate
+
 - `/install-plugin` - Install to system folders for DAW use
 - `/test` - Run automated validation suite
 - `/improve` - Add features or fix bugs (with regression testing)
 - `/sync-design` - Validate UI consistency with creative brief
+- `/reconcile` - Reconcile state between planning and implementation
 
 ## Modern Interface Design
 
 Plugins use web-based interfaces (HTML/CSS/JS) rendered via JUCE's WebView instead of traditional GUI frameworks. This enables:
+
 - **Rapid prototyping**: See design changes instantly without rebuilding
 - **Modern aesthetics**: Leverage contemporary web design patterns and animations
 - **Interactive mockups**: Test and refine interfaces before implementation
@@ -62,32 +70,39 @@ Plugins use web-based interfaces (HTML/CSS/JS) rendered via JUCE's WebView inste
 ## Key Features
 
 ### Automated Build Pipeline
+
 7-phase build system (`scripts/build-and-install.sh`) handles validation, compilation, installation, and verification. No manual CMake commands or Xcode configuration required.
 
 ### Quality Assurance
+
 - Automated pluginval testing (VST3/AU validation)
 - Regression testing on modifications
 - Backup verification before destructive operations
 - Build failure detection and troubleshooting
 
 ### Knowledge Base
+
 Dual-indexed troubleshooting database (`troubleshooting/`) captures solutions to build failures, runtime issues, GUI problems, and API misuse. The system learns from every problem encountered.
 
 **Required Reading** (`juce8-critical-patterns.md`) automatically prevents repeat mistakes by injecting proven patterns into all subagent contexts.
 
 ### Graduated Research Protocol
+
 3-level investigation system (`/research`) for complex problems:
+
 - **Quick**: Single-agent targeted investigation (1-2 min)
 - **Moderate**: Multi-agent parallel search (3-5 min)
 - **Deep**: Comprehensive multi-level analysis (5-10 min)
 
 ### Version Management
+
 - Semantic versioning on improvements
 - Git-based state tracking
 - Safe rollback capabilities
 - Backup verification before destructive operations
 
 ### Lifecycle Management
+
 - `/install-plugin` - Deploy to system folders
 - `/uninstall` - Remove binaries (keep source)
 - `/reset-to-ideation` - Roll back to concept stage
@@ -97,7 +112,9 @@ Dual-indexed troubleshooting database (`troubleshooting/`) captures solutions to
 ## System Architecture
 
 ### Contracts (Single Source of Truth)
+
 Every plugin has immutable contracts in `plugins/[Name]/.ideas/`:
+
 - `creative-brief.md` - Vision, sonic goals, UX principles
 - `parameter-spec.md` - Complete parameter definitions
 - `architecture.md` - DSP design and signal flow
@@ -107,7 +124,9 @@ Every plugin has immutable contracts in `plugins/[Name]/.ideas/`:
 **Zero drift**: All stages reference the same specs. No "telephone game" across workflows.
 
 ### Dispatcher Pattern
+
 Each implementation stage runs in a fresh subagent context:
+
 - `foundation-agent` (Stage 2) - Project structure
 - `shell-agent` (Stage 3) - Parameter management
 - `dsp-agent` (Stage 4) - Audio processing
@@ -116,7 +135,9 @@ Each implementation stage runs in a fresh subagent context:
 **No context accumulation**: Clean separation prevents cross-contamination and keeps token usage minimal.
 
 ### Discovery Through Play
+
 All features discoverable via:
+
 - Slash command autocomplete (type `/` in Claude Code)
 - Numbered decision menus at checkpoints
 - Interactive skill prompts
@@ -124,7 +145,9 @@ All features discoverable via:
 **No manual required**: Learn by exploring, not reading docs.
 
 ### Checkpoint Protocol
+
 At every completion point:
+
 1. Auto-commit changes
 2. Update state files (`.continue-here.md`, `PLUGINS.md`)
 3. Present numbered decision menu
@@ -136,11 +159,24 @@ At every completion point:
 ## Quick Start
 
 ### Prerequisites
+
 - macOS (Sonoma or later recommended)
-- Xcode Command Line Tools
-- JUCE framework (`/Applications/JUCE`)
 - Claude Code CLI
-- CMake + Ninja (optional but recommended)
+
+All other dependencies (Xcode Command Line Tools, JUCE, CMake, Python, pluginval) can be validated and installed via `/setup`.
+
+### First-Time Setup
+
+```bash
+# Validate and configure your system dependencies
+/setup
+
+# The setup wizard will:
+# - Detect your platform and installed tools
+# - Offer to install missing dependencies automatically or guide manual installation
+# - Save configuration for build scripts
+# - Generate a system report
+```
 
 ### Create Your First Plugin
 
@@ -190,7 +226,15 @@ At every completion point:
 
 ## Complete Command Reference
 
+### Setup
+
+- `/setup` - Validate and configure system dependencies (first-time setup)
+  - Detects platform, checks for required tools
+  - Offers automated installation or guided manual setup
+  - Saves configuration to `.claude/system-config.json`
+
 ### Development Workflow
+
 - `/dream` - Ideate new plugin concept
 - `/plan` - Research and design (Stages 0-1)
 - `/implement [Name]` - Build plugin (Stages 2-6)
@@ -198,6 +242,7 @@ At every completion point:
 - `/improve [Name]` - Modify completed plugin (with regression testing)
 
 ### Quality Assurance
+
 - `/test [Name]` - Run automated validation suite
 - `/sync-design [Name]` - Validate mockup ↔ brief consistency
 - `/research [topic]` - Deep investigation (3-level protocol)
@@ -205,11 +250,13 @@ At every completion point:
 - `/add-critical-pattern` - Add current problem to Required Reading
 
 ### Deployment
+
 - `/install-plugin [Name]` - Install to system folders
 - `/uninstall [Name]` - Remove binaries (keep source)
 - `/show-standalone [Name]` - Preview UI in standalone mode
 
 ### Lifecycle
+
 - `/clean` - Interactive cleanup menu (uninstall/reset/destroy)
 - `/reset-to-ideation [Name]` - Remove implementation, keep idea/mockups
 - `/destroy [Name]` - Complete removal (with verified backup)
@@ -307,20 +354,27 @@ Every problem encountered becomes institutional knowledge. The system learns and
 ## Requirements
 
 ### Software
+
+**Required:**
 - macOS 13+ (Sonoma recommended)
-- Xcode Command Line Tools (`xcode-select --install`)
-- JUCE framework installed at `/Applications/JUCE`
 - Claude Code CLI
-- CMake 3.15+ (optional but recommended)
-- Ninja build system (optional but recommended)
+
+**Dependencies (validated/installed via `/setup`):**
+- Xcode Command Line Tools (`xcode-select --install`)
+- JUCE 8.0.0+ (audio plugin framework)
+- Python 3.8+ (build scripts)
+- CMake 3.15+ (build system)
+- pluginval (plugin validation tool)
 - Git
 
 ### Hardware
+
 - Apple Silicon or Intel Mac
 - 8GB RAM minimum (16GB recommended)
 - 2GB free disk space per plugin
 
 ### Knowledge
+
 - **Zero programming required**
 - Basic understanding of audio plugin concepts (parameters, presets, DAW usage)
 - Ability to describe sonic goals and UX preferences
@@ -336,6 +390,7 @@ MIT - Use freely, modify as needed, share what you learn.
 ## Acknowledgments
 
 Built with:
+
 - [JUCE](https://juce.com/) - Cross-platform audio application framework
 - [Claude Code](https://claude.com/claude-code) - AI-assisted development environment
 - [Anthropic](https://anthropic.com/) - Claude AI models
