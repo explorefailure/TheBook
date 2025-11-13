@@ -5,6 +5,12 @@
 echo "━━━ Plugin Freedom System - Environment Validation ━━━"
 echo ""
 
+# Clean expired cache entries
+if [ -f ".claude/utils/validation-cache.sh" ]; then
+  source .claude/utils/validation-cache.sh
+  clean_cache 2>/dev/null
+fi
+
 ERRORS=0
 WARNINGS=0
 

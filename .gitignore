@@ -4,6 +4,9 @@ Builds/
 logs/
 backups/
 
+# Cache
+.claude/cache/
+
 # Python
 __pycache__/
 *.py[cod]

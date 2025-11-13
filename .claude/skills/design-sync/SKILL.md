@@ -69,6 +69,34 @@ Track completion as you execute:
 
 ---
 
+### Step 0: Check Cache
+<step_requirement>MUST check cache before proceeding to Step 1. Skip validation if cache hit.</step_requirement>
+
+Before analyzing contracts, check if validation already performed on current content:
+
+```bash
+# Source cache utilities
+source .claude/utils/validation-cache.sh
+
+# Check if cached
+if is_cached "design-sync" "$PLUGIN_NAME" \
+    "plugins/$PLUGIN_NAME/.ideas/creative-brief.md" \
+    "plugins/$PLUGIN_NAME/.ideas/parameter-spec.md" \
+    plugins/$PLUGIN_NAME/.ideas/mockups/*.yaml; then
+
+    echo "✓ design-sync cache hit (content unchanged since last validation)"
+    echo ""
+    get_cached_result "design-sync" "$PLUGIN_NAME"
+    exit 0
+fi
+```
+
+If cache hit, display cached result and exit. Do not proceed to Step 1.
+
+If cache miss (content changed or expired), continue to Step 1.
+
+---
+
 ### Step 1: Load Contracts
 <step_requirement>MUST complete before Step 2. If files missing, BLOCK with error menu.</step_requirement>
 
@@ -370,8 +398,27 @@ Update brief's "UI Vision" section to reflect current mockup (preserve original 
 - Return success (allow implementation)
 - Warn: "Implementation may not match original vision"
 
-### Step 7: Route Back to ui-mockup
-<step_requirement>MUST present ui-mockup Phase 5.5 decision menu after completing user's choice.</step_requirement>
+### Step 7: Cache Result and Route Back to ui-mockup
+<step_requirement>MUST cache validation result before presenting decision menu.</step_requirement>
+
+**After Step 6 actions complete, cache the validation result:**
+
+```bash
+# Build result JSON
+RESULT_JSON=$(jq -n \
+    --arg status "success" \
+    --argjson drift "$DRIFT_DETECTED" \
+    --argjson findings "$FINDINGS_JSON" \
+    '{status: $status, drift_detected: $drift, findings: $findings}')
+
+# Cache for 24 hours
+cache_result "design-sync" "$PLUGIN_NAME" 24 "$RESULT_JSON" \
+    "plugins/$PLUGIN_NAME/.ideas/creative-brief.md" \
+    "plugins/$PLUGIN_NAME/.ideas/parameter-spec.md" \
+    plugins/$PLUGIN_NAME/.ideas/mockups/*.yaml
+```
+
+**Then return to ui-mockup Phase 5.5 decision menu:**
 
 <handoff_protocol>
 <target_skill>ui-mockup</target_skill>
@@ -379,7 +426,7 @@ Update brief's "UI Vision" section to reflect current mockup (preserve original 
 <handoff_type>return_to_workflow</handoff_type>
 <required_menu>Phase 5.5 decision menu (without "Check alignment" option)</required_menu>
 
-**After Step 6 actions complete (brief updated, mockup changed, or override logged), return to ui-mockup Phase 5.5 decision menu.**
+**After caching and completing Step 6 actions (brief updated, mockup changed, or override logged), return to ui-mockup Phase 5.5 decision menu.**
 
 **Present this menu:**
 
