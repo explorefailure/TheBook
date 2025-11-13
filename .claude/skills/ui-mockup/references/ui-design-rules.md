@@ -13,6 +13,7 @@
 - [Sizing Strategies](#sizing-strategies)
 - [Resource Provider Requirements](#resource-provider-requirements)
 - [Parameter Binding Patterns](#parameter-binding-patterns)
+- [Interactive Control Patterns](#interactive-control-patterns)
 - [Performance Guidelines](#performance-guidelines)
 - [Platform-Specific Considerations](#platform-specific-considerations)
 
@@ -408,9 +409,270 @@ gainSlider.value = gainState.getNormalisedValue();
 
 ---
 
+## Interactive Control Patterns
+
+### Rule 8: Rotary Control Rotation
+
+**Principle:** Rotate the parent knob element, not child indicator.
+
+**❌ WRONG (Clock hand effect):**
+
+```css
+.knob-indicator {
+    transform-origin: center bottom;
+    transition: transform 50ms;
+}
+```
+
+```javascript
+// Only indicator rotates, knob stays fixed
+indicator.style.transform = `rotate(${degrees}deg)`;
+```
+
+**✅ CORRECT (Entire control rotates):**
+
+```css
+.knob {
+    transform-origin: center center;
+    transition: transform 50ms;
+}
+
+.knob-indicator {
+    /* No transform - inherits parent rotation */
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);  /* Only for centering */
+}
+```
+
+```javascript
+// Rotate parent - indicator follows automatically
+knob.style.transform = `rotate(${degrees}deg)`;
+```
+
+**Rationale:** The entire knob (body + indicator) should rotate as a single unit. Rotating only the indicator creates a "clock hand" effect where the line spins around a pivot point while the knob body stays fixed.
+
+**Standard rotation range:** -135° to +135° (270° total range)
+
+```javascript
+// Standard knob rotation calculation
+const normalized = (value - min) / (max - min);  // 0 to 1
+const degrees = -135 + (normalized * 270);       // -135° to +135°
+knob.style.transform = `rotate(${degrees}deg)`;
+```
+
+---
+
+### Rule 9: Skeuomorphic Lighting Consistency
+
+**Principle:** Light and shadow remain fixed; only texture and indicator rotate.
+
+**Implementation:**
+
+```html
+<div class="knob">
+    <!-- Layer 1: Fixed lighting (doesn't rotate) -->
+    <div class="knob-lighting"></div>
+
+    <!-- Layer 2: Rotating texture + indicator (rotates with knob) -->
+    <div class="knob-body">
+        <div class="knob-texture"></div>
+        <div class="knob-indicator"></div>
+    </div>
+</div>
+```
+
+```css
+.knob {
+    position: relative;
+}
+
+.knob-lighting {
+    /* Fixed lighting layer - doesn't rotate */
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    box-shadow:
+        inset -2px -2px 4px rgba(0,0,0,0.4),  /* Bottom-right shadow */
+        inset 2px 2px 4px rgba(255,255,255,0.2);  /* Top-left highlight */
+    pointer-events: none;
+    z-index: 2;
+}
+
+.knob-body {
+    /* Rotating layer - texture + indicator */
+    transform-origin: center center;
+    transition: transform 50ms;
+    position: relative;
+    z-index: 1;
+}
+```
+
+```javascript
+// Rotate only .knob-body (lighting stays fixed)
+knobBody.style.transform = `rotate(${degrees}deg)`;
+```
+
+**Rationale:** In physical hardware, light source position is fixed. When you turn a knob, the ridges/texture rotate under fixed lighting, creating realistic shadow movement. Rotating the lighting itself breaks physical realism.
+
+**Examples:**
+- ✅ Knob texture/ridges rotate, highlights/shadows stay fixed
+- ✅ Indicator line rotates with knob body
+- ❌ Shadow rotates with knob (unrealistic - light source doesn't follow knob)
+
+---
+
+### Rule 10: Test HTML Preview Frame
+
+**Principle:** Test HTML must show plugin boundaries with fixed-size preview frame.
+
+**❌ WRONG (Fills entire browser window):**
+
+```css
+html, body {
+    height: 100%;
+}
+
+.container {
+    width: 100%;   /* Fills browser window */
+    height: 100%;  /* No visible boundaries */
+}
+```
+
+**✅ CORRECT (Fixed preview frame):**
+
+```css
+html, body {
+    height: 100%;
+    margin: 0;
+    background: #000;  /* Black beyond plugin */
+}
+
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+/* Fixed-size frame matching plugin spec */
+.plugin-frame {
+    width: 600px;   /* FIXED - from creative brief */
+    height: 300px;  /* FIXED - from creative brief */
+    border: 2px solid #444;  /* Visible edge */
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    overflow: hidden;
+    position: relative;
+}
+
+/* Plugin UI fills frame */
+.container {
+    width: 100%;   /* Now 100% of 600px frame */
+    height: 100%;  /* Now 100% of 300px frame */
+}
+```
+
+**Rationale:** Browser testing must show actual plugin dimensions. Without a fixed frame, designers can't verify if content fits the target size - UI appears to "work" by filling the browser window, then overflows in actual plugin.
+
+**Requirements:**
+- Frame dimensions match `window.width` × `window.height` from YAML spec
+- Visible border (2px solid, distinguishable color)
+- Black background outside frame (shows bounds clearly)
+- Centered in viewport (flexbox)
+- Apply this to **test HTML only** - production HTML still uses `width: 100%; height: 100%;`
+
+---
+
+### Rule 11: Debug Parameter Monitor (Test HTML Only)
+
+**Principle:** Test HTML must include a live parameter monitor showing current adjustments.
+
+**Implementation:**
+
+```html
+<!-- Bottom-right debug monitor -->
+<div class="debug-monitor">
+    <div class="debug-label">PARAMETER MONITOR</div>
+    <div class="debug-param" id="debugParam">—</div>
+    <div class="debug-value" id="debugValue">—</div>
+    <div class="debug-normalized" id="debugNormalized">—</div>
+</div>
+```
+
+```css
+.debug-monitor {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.85);
+    color: #0f0;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    padding: 8px 12px;
+    border: 1px solid #333;
+    border-radius: 4px;
+    min-width: 150px;
+    pointer-events: none;  /* Don't block clicks */
+    z-index: 10000;
+}
+
+.debug-label {
+    color: #666;
+    font-size: 9px;
+    margin-bottom: 4px;
+    letter-spacing: 1px;
+}
+
+.debug-param {
+    font-weight: bold;
+    color: #0f0;
+}
+
+.debug-value {
+    color: #fff;
+    margin-top: 2px;
+}
+
+.debug-normalized {
+    color: #888;
+    font-size: 10px;
+}
+```
+
+```javascript
+// Update debug monitor on parameter change
+function updateDebugMonitor(paramId, value, normalizedValue) {
+    document.getElementById('debugParam').textContent = paramId;
+    document.getElementById('debugValue').textContent = formatValue(paramId, value);
+    document.getElementById('debugNormalized').textContent = `${(normalizedValue * 100).toFixed(1)}%`;
+}
+
+// Call in parameter update handlers
+function updateKnob(paramId, value, min, max) {
+    // ... normal parameter update logic ...
+
+    const normalized = (value - min) / (max - min);
+    updateDebugMonitor(paramId, value, normalized);
+}
+```
+
+**Requirements:**
+- Position: `bottom: 10px; right: 10px` (fixed)
+- Shows: Parameter ID, formatted value, normalized percentage
+- Updates in real-time during drag/scroll/interaction
+- Non-interactive (`pointer-events: none`)
+- High z-index (appears above all UI elements)
+- Monospace terminal aesthetic (green on black)
+- **Test HTML only** - never in production UI
+
+**Rationale:** Provides instant visual feedback during browser testing that parameter bindings are working correctly, values are in correct ranges, and formatting matches expectations. Essential for debugging parameter behavior without opening dev console.
+
+---
+
 ## Performance Guidelines
 
-### Rule 8: Optimize for Real-Time Audio Context
+### Rule 12: Optimize for Real-Time Audio Context
 
 **✅ GOOD:**
 
@@ -446,7 +708,7 @@ window.__JUCE__.backend.addEventListener("meterUpdate", (data) => {
 
 ---
 
-### Rule 9: Timer-Based Updates
+### Rule 13: Timer-Based Updates
 
 **C++ pattern (PluginEditor):**
 
@@ -484,7 +746,7 @@ startTimerHz(16);  // 60ms = ~16 FPS (good for visualizations)
 
 ## Platform-Specific Considerations
 
-### Rule 10: Handle Platform Differences
+### Rule 14: Handle Platform Differences
 
 **Windows-specific (omit on macOS):**
 
@@ -573,6 +835,13 @@ Before finalizing any mockup, validate against these rules:
 - [ ] **Error handling:** JavaScript error handlers for `error` and `unhandledrejection`
 - [ ] **Platform support:** Platform-specific options included if cross-platform
 - [ ] **Testing:** Tested in Debug and Release builds, tested reload 10+ times
+
+### Interactive Controls (Test HTML)
+
+- [ ] **Rotary rotation:** Parent knob rotates (not child indicator)
+- [ ] **Skeuomorphic lighting:** Light/shadow fixed, only texture rotates
+- [ ] **Preview frame:** Fixed-size frame with visible border (test HTML only)
+- [ ] **Debug monitor:** Parameter monitor bottom-right (test HTML only)
 
 ---
 

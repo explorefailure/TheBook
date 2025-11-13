@@ -130,6 +130,9 @@ Drum808AudioProcessorEditor::Drum808AudioProcessorEditor(Drum808AudioProcessor& 
 
     // Set window size (from mockup)
     setSize(1000, 550);
+
+    // Start timer for LED updates (60fps)
+    startTimer(16);
 }
 
 Drum808AudioProcessorEditor::~Drum808AudioProcessorEditor()
@@ -146,6 +149,48 @@ void Drum808AudioProcessorEditor::resized()
 {
     // WebView fills entire editor
     webView->setBounds(getLocalBounds());
+}
+
+void Drum808AudioProcessorEditor::timerCallback()
+{
+    // Read atomic flags set by audio thread (Pattern 5: Threading)
+    // Check each voice and trigger corresponding LED in JavaScript
+
+    if (processorRef.kickTriggered.load(std::memory_order_relaxed))
+    {
+        processorRef.kickTriggered.store(false, std::memory_order_relaxed);
+        webView->emitEventIfBrowserIsVisible("ledTrigger", "kick");
+    }
+
+    if (processorRef.lowTomTriggered.load(std::memory_order_relaxed))
+    {
+        processorRef.lowTomTriggered.store(false, std::memory_order_relaxed);
+        webView->emitEventIfBrowserIsVisible("ledTrigger", "lowtom");
+    }
+
+    if (processorRef.midTomTriggered.load(std::memory_order_relaxed))
+    {
+        processorRef.midTomTriggered.store(false, std::memory_order_relaxed);
+        webView->emitEventIfBrowserIsVisible("ledTrigger", "midtom");
+    }
+
+    if (processorRef.clapTriggered.load(std::memory_order_relaxed))
+    {
+        processorRef.clapTriggered.store(false, std::memory_order_relaxed);
+        webView->emitEventIfBrowserIsVisible("ledTrigger", "clap");
+    }
+
+    if (processorRef.closedHatTriggered.load(std::memory_order_relaxed))
+    {
+        processorRef.closedHatTriggered.store(false, std::memory_order_relaxed);
+        webView->emitEventIfBrowserIsVisible("ledTrigger", "closedhat");
+    }
+
+    if (processorRef.openHatTriggered.load(std::memory_order_relaxed))
+    {
+        processorRef.openHatTriggered.store(false, std::memory_order_relaxed);
+        webView->emitEventIfBrowserIsVisible("ledTrigger", "openhat");
+    }
 }
 
 std::optional<juce::WebBrowserComponent::Resource>

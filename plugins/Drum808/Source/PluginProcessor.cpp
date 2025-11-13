@@ -408,14 +408,17 @@ void Drum808AudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce:
             if (note == 36) // C1 → Kick
             {
                 kick.trigger(velocity);
+                kickTriggered.store(true, std::memory_order_relaxed);
             }
             else if (note == 38) // D1 → Clap
             {
                 clap.trigger(velocity);
+                clapTriggered.store(true, std::memory_order_relaxed);
             }
             else if (note == 41) // F1 → Low Tom
             {
                 lowTom.trigger(velocity, lowTomBaseFreq);
+                lowTomTriggered.store(true, std::memory_order_relaxed);
             }
             else if (note == 42) // F#1 → Closed Hat (CHOKES open hat)
             {
@@ -424,14 +427,17 @@ void Drum808AudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce:
 
                 // THEN: Trigger closed hat
                 closedHat.trigger(velocity);
+                closedHatTriggered.store(true, std::memory_order_relaxed);
             }
             else if (note == 45) // A1 → Mid Tom
             {
                 midTom.trigger(velocity, midTomBaseFreq);
+                midTomTriggered.store(true, std::memory_order_relaxed);
             }
             else if (note == 46) // A#1 → Open Hat
             {
                 openHat.trigger(velocity);
+                openHatTriggered.store(true, std::memory_order_relaxed);
             }
         }
     }

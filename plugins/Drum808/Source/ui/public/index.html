@@ -694,6 +694,62 @@
 
       console.log("Drum808 UI initialized - 24 parameters bound");
     });
+
+    // ====================================================================
+    // LED TRIGGER ANIMATION (Pattern 20: VU Meter Animation)
+    // ====================================================================
+
+    // LED elements
+    const ledElements = {
+      kick: document.getElementById('kick-led'),
+      lowtom: document.getElementById('lowtom-led'),
+      midtom: document.getElementById('midtom-led'),
+      clap: document.getElementById('clap-led'),
+      closedhat: document.getElementById('closedhat-led'),
+      openhat: document.getElementById('openhat-led')
+    };
+
+    // LED brightness state (separate current/target for ballistic motion)
+    const ledBrightness = {
+      kick: 0,
+      lowtom: 0,
+      midtom: 0,
+      clap: 0,
+      closedhat: 0,
+      openhat: 0
+    };
+
+    // Listen for LED trigger events from C++
+    window.addEventListener('ledTrigger', (event) => {
+      const voice = event.detail;
+      if (ledBrightness.hasOwnProperty(voice)) {
+        ledBrightness[voice] = 1.0;  // Set to full brightness
+      }
+    });
+
+    // Animation loop (Pattern 20: requestAnimationFrame for smooth motion)
+    function animateLEDs() {
+      Object.keys(ledBrightness).forEach(voice => {
+        // Exponential decay (slow falloff, readable visual sustain)
+        ledBrightness[voice] *= 0.85;  // Decay factor
+
+        // Update visual
+        const brightness = ledBrightness[voice];
+        if (brightness > 0.01) {
+          ledElements[voice].classList.add('active');
+          ledElements[voice].style.opacity = brightness;
+        } else {
+          ledElements[voice].classList.remove('active');
+          ledElements[voice].style.opacity = 0;
+          ledBrightness[voice] = 0;
+        }
+      });
+
+      requestAnimationFrame(animateLEDs);
+    }
+
+    // Start animation loop
+    animateLEDs();
   </script>
 </body>
 </html>

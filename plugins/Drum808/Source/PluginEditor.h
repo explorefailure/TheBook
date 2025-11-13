@@ -2,7 +2,7 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 
-class Drum808AudioProcessorEditor : public juce::AudioProcessorEditor
+class Drum808AudioProcessorEditor : public juce::AudioProcessorEditor, private juce::Timer
 {
 public:
     explicit Drum808AudioProcessorEditor(Drum808AudioProcessor&);
@@ -10,6 +10,8 @@ public:
 
     void paint(juce::Graphics&) override;
     void resized() override;
+
+    void timerCallback() override;
 
 private:
     Drum808AudioProcessor& processorRef;

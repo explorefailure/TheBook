@@ -152,3 +152,8 @@ notes:
 fixes_applied:
   - "v2: Test HTML uses fixed-size frame (600×300px) with visible border and black body background"
   - "v2: Knob rotation applies to PARENT .knob element, not child .knob-indicator"
+
+# Finalization metadata
+finalized: true
+finalized_at: 2025-11-13T20:45:00Z
+finalized_by_phase: 5.5

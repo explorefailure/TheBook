@@ -32,6 +32,14 @@ public:
 
     juce::AudioProcessorValueTreeState parameters;
 
+    // LED trigger flags (audio thread → UI thread communication)
+    std::atomic<bool> kickTriggered{false};
+    std::atomic<bool> lowTomTriggered{false};
+    std::atomic<bool> midTomTriggered{false};
+    std::atomic<bool> clapTriggered{false};
+    std::atomic<bool> closedHatTriggered{false};
+    std::atomic<bool> openHatTriggered{false};
+
 private:
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
 
