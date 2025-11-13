@@ -34,7 +34,7 @@
 | OrganicHats | 📦 Installed | 1.0.0 | 2025-11-12 |
 | DrumRoulette | 📦 Installed | 1.0.0 | 2025-11-12 |
 | Scatter | 💡 Ideated | - | 2025-11-12 |
-| AutoClip | 💡 Ideated (Draft Params) | - | 2025-11-13 |
+| AutoClip | 🚧 Stage 0 | 4.4 | 2025-11-13 |
 | MinimalKick | 🚧 Stage 5 | - | 2025-11-13 |
 
 ### GainKnob
@@ -549,24 +549,32 @@ Granular reversed delay with beautiful stuttering grains, randomized pitch (quan
 
 ### AutoClip
 
-**Status:** 💡 Ideated (Draft Params)
-**Type:** Effect
+**Status:** 🚧 Stage 0
+**Type:** Audio Effect (Hard Clipper)
 **Created:** 2025-11-13
+**Complexity:** 4.4
 
 **Description:**
-Hard clipper with automatic peak-based gain matching for drum processing.
+Hard clipper with automatic peak-based gain matching designed for drum processing. Maintains consistent perceived loudness as clipping intensity increases through real-time peak analysis and gain compensation. Fixed 5ms lookahead ensures smooth transient anticipation without perceptible latency.
 
 **Parameters (2 total):**
-- clipThreshold: 0-100%, default 0% (clipping threshold)
-- soloClipped: Off/On, default Off (listen to clipped signal only)
+- clipThreshold: 0-100%, default 0% (0% = no clipping, 100% = maximum clipping)
+- soloClipped: Off/On, default Off (output only clipped portion for monitoring)
 
-**DSP:** Hard clipping with peak-based automatic gain compensation. Fixed 5ms lookahead for transient anticipation.
+**DSP:** Hard clipping with peak-based automatic gain compensation. Fixed 5ms lookahead buffer for transient anticipation. Gain smoothing (50ms) prevents zipper noise. Clip solo (delta monitoring) outputs difference signal for artifact inspection.
 
-**GUI:** Minimalist single-screen layout with large threshold control and clip solo toggle.
+**GUI:** Minimalist single-screen layout with large threshold control, clip solo toggle, input/output metering showing gain matching in action, visual clipping indicator.
+
+**Implementation Strategy:** Phased (6 phases: 3 DSP + 3 GUI)
+- Stage 4.1: Core processing (hard clipping + lookahead)
+- Stage 4.2: Automatic gain matching (peak detection + compensation)
+- Stage 4.3: Clip solo (delta monitoring)
+- Stage 5.1-5.3: WebView UI (layout, parameter binding, metering)
 
 **Lifecycle Timeline:**
 - **2025-11-13:** Creative brief completed
 - **2025-11-13:** Draft parameters captured (2 parameters)
+- **2025-11-13 (Stage 0):** Research & Planning complete - Architecture and plan documented (Complexity 4.4)
 
 **Known Issues:**
 - None
