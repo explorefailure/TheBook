@@ -75,17 +75,16 @@ This skill orchestrates plugin implementation stages 2-5. Stages 0-1 (Research &
     After EVERY subagent return (whether full stage or phase completion), orchestrator MUST execute checkpoint sequence.
 
     <critical_sequence enforce_order="true">
-      <step order="1" required="true">Commit all changes with git</step>
-      <step order="2" required="true">Update .continue-here.md with current state</step>
-      <step order="3" required="true">Update PLUGINS.md status</step>
-      <step order="4" required="true">Update plan.md if phased implementation</step>
-      <step order="5" required="true">Present numbered decision menu</step>
-      <step order="6" required="true" blocking="true">WAIT for user response</step>
+      <step order="1" required="true">Verify subagent updated state (check stateUpdated field)</step>
+      <step order="2" required="true">Fallback to orchestrator update if verification fails</step>
+      <step order="3" required="true">Commit all changes with git</step>
+      <step order="4" required="true">Present numbered decision menu</step>
+      <step order="5" required="true" blocking="true">WAIT for user response</step>
     </critical_sequence>
 
     <enforcement>
-      All 6 steps must complete in order before proceeding.
-      Step 6 is blocking - NEVER auto-proceed to next stage.
+      All 5 steps must complete in order before proceeding.
+      Step 5 is blocking - NEVER auto-proceed to next stage.
     </enforcement>
 
     <applies_to>
@@ -97,8 +96,8 @@ This skill orchestrates plugin implementation stages 2-5. Stages 0-1 (Research &
   </checkpoint_protocol>
 
   <handoff_protocol id="subagent-orchestrator-handoff">
-    Subagents NEVER commit - they only implement and return JSON report.
-    Orchestrator handles all state management and git operations.
+    Subagents update state files AND return JSON report.
+    Orchestrator verifies state updates, falls back if needed, then commits.
 
     <handoff_format>
       Subagent returns JSON:
@@ -107,9 +106,29 @@ This skill orchestrates plugin implementation stages 2-5. Stages 0-1 (Research &
         "stage": 2-6,
         "completionStatement": "...",
         "filesCreated": [...],
-        "nextSteps": [...]
+        "nextSteps": [...],
+        "stateUpdated": true | false,
+        "stateUpdateError": "..." (optional)
       }
     </handoff_format>
+
+    <verification_protocol>
+      After subagent returns:
+      1. Check stateUpdated field in JSON report
+      2. If true: Verify .continue-here.md actually changed (read and check stage field)
+      3. If false or missing: Trigger orchestrator fallback
+      4. If stateUpdateError present: Log warning and trigger fallback
+    </verification_protocol>
+
+    <fallback_protocol>
+      If verification fails:
+      - Log: "Subagent did not update state, orchestrator handling"
+      - Read current .continue-here.md
+      - Update fields per contract for this stage
+      - Write .continue-here.md
+      - Update PLUGINS.md (status + timeline)
+      - Log: "State updated by orchestrator (fallback)"
+    </fallback_protocol>
   </handoff_protocol>
 
   <state_requirement id="required-reading-injection">
@@ -453,44 +472,41 @@ For detailed algorithm, pseudocode, and examples, see [references/phase-aware-di
 
     <checkpoint_phase>
       <checkpoint_enforcement enforce_order="true">
-        <step order="1" required="true" function="commitStage">
+        <step order="1" required="true" function="verifyStateUpdate">
+          verifyStateUpdate(pluginName, currentStage, result)
+          Check if subagent updated state files:
+          - Read result.stateUpdated field from JSON report
+          - If true: Verify .continue-here.md stage field matches currentStage
+          - If true: Verify PLUGINS.md status updated
+          - If false or missing: Proceed to fallback
+          VERIFY: State was updated by subagent OR trigger fallback
+        </step>
+
+        <step order="2" required="true" function="fallbackStateUpdate">
+          IF verifyStateUpdate() returned false:
+            Log: "Subagent did not update state (stateUpdated=false), orchestrator handling"
+            updateHandoff(pluginName, currentStage, result.completed, result.nextSteps)
+            updatePluginStatus(pluginName, `🚧 Stage ${currentStage}`)
+            updatePluginTimeline(pluginName, currentStage, result.description)
+            validateRegistryConsistency(pluginName)
+            Log: "State updated by orchestrator (fallback)"
+          ELSE:
+            Log: "State updated by subagent, verified"
+        </step>
+
+        <step order="3" required="true" function="commitStage">
           commitStage(pluginName, currentStage, result.description)
-          Auto-commit all changes from subagent completion
+          Auto-commit all changes (code + state files)
           VERIFY: git commit succeeded (check exit code)
         </step>
 
-        <step order="2" required="true" function="updateHandoff">
-          updateHandoff(pluginName, currentStage + 1, result.completed, result.nextSteps)
-          Update .continue-here.md with new stage, timestamp, next_action
-          VERIFY: File exists and contains expected stage number
-        </step>
-
-        <step order="3" required="true" function="updatePluginStatus">
-          updatePluginStatus(pluginName, `🚧 Stage ${currentStage}`)
-          Update PLUGINS.md status emoji in BOTH locations atomically
-          VERIFY: PLUGINS.md contains new status in full entry section
-        </step>
-
-        <step order="3.5" required="true" function="validateRegistryConsistency">
-          validateRegistryConsistency(pluginName)
-          Verify registry table matches full entry after status update
-          VERIFY: Both locations show identical status
-          BLOCK: If mismatch detected, present drift resolution menu
-        </step>
-
-        <step order="4" required="true" function="updatePluginTimeline">
-          updatePluginTimeline(pluginName, currentStage, result.description)
-          Append timeline entry to PLUGINS.md
-          VERIFY: Timeline entry exists in PLUGINS.md
-        </step>
-
-        <step order="5" required="true" function="verifyCheckpoint">
+        <step order="4" required="true" function="verifyCheckpoint">
           verifyCheckpoint(pluginName, currentStage)
           Validate all checkpoint steps completed successfully
           BLOCK: If any step failed, present retry menu before continuing
         </step>
 
-        <step order="6" required="true" blocking="true" function="presentDecisionMenu">
+        <step order="5" required="true" blocking="true" function="presentDecisionMenu">
           presentDecisionMenu({ stage, completionStatement, pluginName })
           Present numbered decision menu and WAIT for user response
         </step>
@@ -504,10 +520,10 @@ For detailed algorithm, pseudocode, and examples, see [references/phase-aware-di
         After steps 1-4 complete, run verification:
 
         CHECKPOINT VERIFICATION:
-        ✓ Step 1: Git commit [commit-hash]
-        ✓ Step 2: Handoff updated (.continue-here.md stage: N+1)
-        ✓ Step 3: Plugin status updated (PLUGINS.md: 🚧 Stage N)
-        ✓ Step 4: Timeline appended (PLUGINS.md: [date] Stage N complete)
+        ✓ Step 1: State update verified (subagent updated: true)
+        ✓ Step 2: Fallback skipped (not needed) OR Fallback completed
+        ✓ Step 3: Git commit [commit-hash]
+        ✓ Step 4: All checkpoint steps validated
 
         IF all verified:
           Proceed to decision menu
@@ -515,10 +531,10 @@ For detailed algorithm, pseudocode, and examples, see [references/phase-aware-di
         IF any failed:
           Display failure report:
           ━━━ Checkpoint Incomplete ━━━
-          ✗ Step 2: Handoff update failed (file not found)
-          ✓ Step 1: Commit succeeded
-          ✓ Step 3: Status updated
-          ✓ Step 4: Timeline appended
+          ✗ Step 1: State verification failed (stateUpdated=false, .continue-here.md unchanged)
+          ✗ Step 2: Fallback update failed (file write error)
+          ✓ Step 3: Commit succeeded
+          ✓ Step 4: Validation passed
 
           Cannot proceed - checkpoint integrity required.
 
@@ -529,17 +545,16 @@ For detailed algorithm, pseudocode, and examples, see [references/phase-aware-di
         ```
 
         **Verification checks:**
-        - Step 1: `git log -1 --oneline` contains stage reference
-        - Step 2: `.continue-here.md` exists and contains `stage: N+1`
-        - Step 3: `PLUGINS.md` contains `**Status:** 🚧 Stage N`
-        - Step 4: `PLUGINS.md` timeline has entry dated today for Stage N
+        - Step 1: Check result.stateUpdated == true AND .continue-here.md stage field matches
+        - Step 2: If fallback ran, verify .continue-here.md and PLUGINS.md updated
+        - Step 3: `git log -1 --oneline` contains stage reference
+        - Step 4: All state files consistent
 
         **Why critical:**
         Incomplete checkpoints cause state corruption:
-        - Missing handoff → /continue can't resume
-        - Missing status → PLUGINS.md out of sync
-        - Missing timeline → no audit trail
+        - Missing state update → /continue can't resume
         - Missing commit → changes lost on crash
+        - Inconsistent state → workflow cannot recover
       </checkpoint_verification>
     </checkpoint_phase>
 
@@ -760,12 +775,12 @@ For detailed error patterns, recovery strategies, and reporting format, see [ref
       ALWAYS present decision menu after subagent completes - user MUST confirm next action
     </reminder>
 
-    <reminder priority="HIGH">
-      ALWAYS commit after each stage using commitStage() from state-management.md
+    <reminder priority="CRITICAL" ref="state-verification">
+      ALWAYS verify subagent updated state - check stateUpdated field, fallback if false/missing
     </reminder>
 
     <reminder priority="HIGH">
-      ALWAYS update state files (.continue-here.md and PLUGINS.md) after every stage
+      ALWAYS commit after each stage using commitStage() from state-management.md
     </reminder>
 
     <reminder priority="HIGH">
@@ -811,8 +826,8 @@ For detailed error patterns, recovery strategies, and reporting format, see [ref
     </anti_pattern>
 
     <anti_pattern severity="HIGH">
-      ❌ Not updating handoff file after stage completes
-      ✓ Update .continue-here.md immediately after subagent returns
+      ❌ Not verifying subagent updated state
+      ✓ Check stateUpdated field, verify .continue-here.md changed, fallback if needed
     </anti_pattern>
 
     <anti_pattern severity="HIGH">
