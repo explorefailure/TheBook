@@ -147,6 +147,28 @@ Each stage is fully documented in its own reference file in `references/` subdir
     <required_file path="plugins/$PLUGIN_NAME/.ideas/architecture.md" created_by="Stage 0" />
     <required_file path="plugins/$PLUGIN_NAME/.ideas/plan.md" created_by="Stage 1" />
     <required_file path="plugins/$PLUGIN_NAME/.ideas/creative-brief.md" created_by="ideation" />
+    <required_file path="plugins/$PLUGIN_NAME/.ideas/parameter-spec.md" created_by="UI mockup finalization">
+      <validation>
+        Stage 2 (foundation-shell-agent) requires COMPLETE parameter specification.
+        Draft specification (parameter-spec-draft.md) is NOT sufficient for implementation.
+
+        <check>
+          IF parameter-spec.md exists:
+            Proceed to Stage 2
+          ELSE IF parameter-spec-draft.md exists:
+            BLOCK with message:
+            "Draft parameters found, but full specification required for implementation.
+
+            Next step: Complete UI mockup workflow to generate parameter-spec.md
+
+            Run: /dream [PluginName] → option 2 (Full UI mockup first)
+
+            After mockup finalized, parameter-spec.md will be generated and Stage 2 can proceed."
+          ELSE:
+            BLOCK with error: "No parameter specification found. Run /dream [PluginName] to create mockup."
+        </check>
+      </validation>
+    </required_file>
 
     <on_missing_files action="BLOCK">
       Display error message:

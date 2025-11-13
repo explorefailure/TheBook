@@ -339,40 +339,184 @@ Creative brief has been finalized for [PluginName]. Ready to proceed to UI mocku
 ✓ Creative brief complete: [PluginName]
 
 What's next?
-1. Create UI mockup (recommended) ← Visualize before building
-2. Start implementation
-3. Research similar plugins ← Find inspiration and examples
-4. Save for later
-5. Other
+1. Quick params + parallel workflow (18 min faster) ← Provide minimal parameter list now, UI design happens in parallel with DSP research
+2. Full UI mockup first (traditional workflow) ← Design UI now, parameters extracted afterward
+3. Start implementation directly (not recommended - requires existing mockup)
+4. Research similar plugins ← Find inspiration and examples
+5. Save for later
+6. Other
 
-Choose (1-5): _
+Choose (1-6): _
 ```
 
 <delegation_rules>
 **Handle responses:**
 
-<delegation_rule skill="ui-mockup" trigger="option_1">
-- Condition: User chooses option 1
+<delegation_rule skill="quick-params-workflow" trigger="option_1">
+- Condition: User chooses option 1 (Quick params + parallel workflow)
+- Action: Execute Phase 8.1 (Quick Parameter Capture)
+- After capture complete: Present parallel execution decision menu
+</delegation_rule>
+
+<delegation_rule skill="ui-mockup" trigger="option_2">
+- Condition: User chooses option 2 (Full UI mockup first)
 - Action: Must invoke ui-mockup skill via Skill tool
 - Do NOT attempt to create mockup within this skill
 </delegation_rule>
 
-<delegation_rule skill="plugin-workflow" trigger="option_2">
-- Condition: User chooses option 2
+<delegation_rule skill="plugin-workflow" trigger="option_3">
+- Condition: User chooses option 3 (Start implementation directly)
 - Action: Must invoke plugin-workflow skill via Skill tool
 - Warning: Must warn user about contract requirements before delegating
 </delegation_rule>
 
-<delegation_rule skill="deep-research" trigger="option_3">
-- Condition: User chooses option 3
+<delegation_rule skill="deep-research" trigger="option_4">
+- Condition: User chooses option 4 (Research similar plugins)
 - Action: Must invoke deep-research skill via Skill tool
 </delegation_rule>
 
-- Option 4 → Confirm handoff file created, exit
-- Option 5 → Ask what they'd like to do
+- Option 5 → Confirm handoff file created, exit
+- Option 6 → Ask what they'd like to do
 </delegation_rules>
 </step>
 </decision_gate>
+
+### Phase 8.1: Quick Parameter Capture (Parallel Workflow Path)
+
+<step number="8.1" required="conditional" condition="user_chose_quick_params">
+**Only execute if user selected option 1 (Quick params + parallel workflow) in Phase 8.**
+
+**Purpose:** Capture minimal parameter definitions to enable Stage 0 DSP research to begin immediately.
+
+**Interactive capture workflow:**
+
+```
+Quick Parameter Capture for Stage 0
+
+You'll provide minimal parameter definitions to enable DSP research.
+Full UI design happens separately (in parallel).
+
+Ready to capture parameters? (y/n): _
+```
+
+**For each parameter, collect via AskUserQuestion:**
+
+1. **Parameter ID:**
+   ```
+   question: "Parameter ID (lowercase, no spaces, e.g., 'filterCutoff')?"
+   header: "Param ID"
+   options:
+     - label: "[suggest from creative brief if mentioned]"
+     - label: "Other", description: "Custom parameter ID"
+   multiSelect: false
+   ```
+
+2. **Parameter Type:**
+   ```
+   question: "Parameter type?"
+   header: "Type"
+   options:
+     - label: "Float", description: "Continuous value (knob/slider)"
+     - label: "Choice", description: "Discrete options (dropdown/buttons)"
+     - label: "Bool", description: "On/off toggle (switch/checkbox)"
+   multiSelect: false
+   ```
+
+3. **Range/Choices (type-dependent):**
+
+   **If Float:**
+   ```
+   question: "Range for [paramId]?"
+   header: "Range"
+   options:
+     - label: "0 to 1", description: "Normalized (common for mix/gain)"
+     - label: "20 to 20000 Hz", description: "Frequency range"
+     - label: "-60 to 12 dB", description: "Decibel range"
+     - label: "0 to 100 ms", description: "Time (milliseconds)"
+     - label: "Other", description: "Custom range"
+   ```
+
+   Then ask for default value and units (if applicable).
+
+   **If Choice:**
+   ```
+   question: "How many options for [paramId]?"
+   header: "Options"
+   options:
+     - label: "2 options", description: "Binary choice"
+     - label: "3 options", description: "Three-way"
+     - label: "4+ options", description: "Multiple choices"
+   ```
+
+   Then collect option labels interactively.
+
+   **If Bool:**
+   ```
+   question: "Default state for [paramId]?"
+   header: "Default"
+   options:
+     - label: "Off (false)", description: "Starts disabled"
+     - label: "On (true)", description: "Starts enabled"
+   ```
+
+4. **DSP Purpose:**
+   ```
+   question: "What does [paramId] control in the audio processing? (1-2 sentences)"
+   header: "DSP Purpose"
+   options:
+     - label: "[suggest based on param name]"
+     - label: "Other", description: "Custom description"
+   ```
+
+5. **Add another parameter?**
+   ```
+   question: "Add another parameter?"
+   header: "Next"
+   options:
+     - label: "Yes", description: "Add another parameter"
+     - label: "No", description: "That's all parameters"
+   multiSelect: false
+   ```
+
+   Loop until user selects "No".
+
+**After all parameters captured:**
+
+1. Generate `parameter-spec-draft.md` using template from assets/parameter-spec-draft-template.md
+2. Save to `plugins/[PluginName]/.ideas/parameter-spec-draft.md`
+3. Update PLUGINS.md status to "💡 Ideated (Draft Params)"
+4. Commit changes:
+   ```bash
+   git add plugins/[PluginName]/.ideas/parameter-spec-draft.md
+   git add PLUGINS.md
+   git commit -m "feat([PluginName]): draft parameters captured for parallel workflow"
+   ```
+
+5. Present parallel execution decision menu:
+   ```
+   ✓ Draft parameters captured: [N] parameters
+
+   Files created:
+   - parameter-spec-draft.md ([N] parameters)
+
+   What's next?
+
+   1. Start Stage 0 research now (recommended) ← Begin DSP research immediately
+   2. Design UI mockup now ← Create visual design in parallel
+   3. Do both in parallel ← Start research, then design (maximum time savings)
+   4. Other
+
+   Choose (1-4): _
+   ```
+
+**Handle menu choices:**
+
+- **Option 1:** Invoke plugin-planning skill for Stage 0 (will accept draft params)
+- **Option 2:** Invoke ui-mockup skill (will validate against draft when generating full spec)
+- **Option 3:** Display: "Start Stage 0 research first (/plan [PluginName]), then run UI mockup (/dream [PluginName] → option 3) in a separate session or after Stage 0 completes."
+- **Option 4:** Collect custom input
+
+</step>
 
 </phases>
 </critical_sequence>

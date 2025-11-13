@@ -3,6 +3,7 @@
 ## State Legend
 
 - **💡 Ideated** - Creative brief exists, no implementation
+- **💡 Ideated (Draft Params)** - Creative brief + draft parameters, ready for parallel workflow
 - **🚧 Stage N** - In development (specific stage number)
 - **✅ Working** - Completed Stage 6, not installed
 - **📦 Installed** - Deployed to system folders

@@ -902,11 +902,95 @@ fi
 
 **If this is the first UI mockup (v1):**
 
+<draft_validation_gate>
+**CRITICAL: Check for existing parameter-spec-draft.md before generating full spec.**
+
+```bash
+DRAFT_PATH="plugins/${PLUGIN_NAME}/.ideas/parameter-spec-draft.md"
+
+if [ -f "$DRAFT_PATH" ]; then
+  echo "ℹ Draft parameters found - validating consistency..."
+  # Proceed to consistency validation
+else
+  echo "ℹ No draft found - generating full spec from mockup"
+  # Skip to generation
+fi
+```
+
+**If draft exists, validate consistency:**
+
+1. Parse draft parameters (IDs, types, ranges)
+2. Parse mockup parameters (from YAML controls)
+3. Compare parameter lists:
+
+```bash
+# Pseudocode for consistency check
+DRAFT_PARAMS=$(parse_draft_parameters "$DRAFT_PATH")
+MOCKUP_PARAMS=$(parse_mockup_parameters "v1-ui.yaml")
+
+MISSING_FROM_MOCKUP=()
+EXTRA_IN_MOCKUP=()
+
+for param in $DRAFT_PARAMS; do
+  if ! contains "$MOCKUP_PARAMS" "$param"; then
+    MISSING_FROM_MOCKUP+=("$param")
+  fi
+done
+
+for param in $MOCKUP_PARAMS; do
+  if ! contains "$DRAFT_PARAMS" "$param"; then
+    EXTRA_IN_MOCKUP+=("$param")
+  fi
+done
+
+if [ ${#MISSING_FROM_MOCKUP[@]} -gt 0 ] || [ ${#EXTRA_IN_MOCKUP[@]} -gt 0 ]; then
+  # Mismatch detected - present resolution menu
+  CONFLICT_DETECTED=true
+else
+  # No mismatch - proceed to generation
+  CONFLICT_DETECTED=false
+fi
+```
+
+**If mismatch detected, present resolution menu:**
+
+```
+⚠️ Parameter mismatch between draft and mockup
+
+Draft specified but missing from mockup:
+- filterCutoff (Float, 20-20000 Hz)
+- resonance (Float, 0-1)
+
+Mockup includes but not in draft:
+- outputGain (Float, -60 to 12 dB)
+
+Resolution options:
+
+1. Update mockup - Add missing parameters to UI design (return to Phase 4)
+2. Update draft - Remove obsolete parameters from draft (regenerate draft)
+3. Merge both - Include all parameters from both sources
+4. Manual resolution - I'll fix this myself (pause workflow)
+5. Other
+
+Choose (1-5): _
+```
+
+**Handle resolution choices:**
+
+- **Option 1:** Return to Phase 4 with instructions to add missing parameters
+- **Option 2:** Regenerate draft with only parameters present in mockup, then continue
+- **Option 3:** Generate full spec with union of both parameter sets (warn about possible duplication)
+- **Option 4:** Pause workflow, wait for manual fix
+- **Option 5:** Collect custom input
+
+**After resolution (or if no conflict), proceed to generation:**
+</draft_validation_gate>
+
 **Create:** `plugins/[Name]/.ideas/parameter-spec.md`
 
 **Purpose:** Lock parameter specification for implementation. This becomes the **immutable contract** for all subsequent stages.
 
-**Extract from YAML:**
+**Extract from YAML (and merge with draft if exists):**
 
 ```markdown
 ## Total Parameter Count

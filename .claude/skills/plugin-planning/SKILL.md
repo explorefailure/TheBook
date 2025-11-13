@@ -41,10 +41,35 @@ If all preconditions pass → proceed to Stage 0 or Stage 1 based on resume logi
 **Duration:** 5-30 minutes (complexity-dependent)
 **Implementation:** Delegated to research-agent subagent via Task tool
 
+<preconditions>
+  <parameter_specification required="true">
+    Stage 0 requires parameter definitions to research DSP architecture.
+
+    Accept EITHER:
+    - parameter-spec.md (full specification from finalized mockup)
+    - parameter-spec-draft.md (minimal specification from ideation)
+
+    <check>
+      IF parameter-spec.md exists:
+        Use full specification (preferred)
+        LOG: "Using full parameter specification"
+      ELSE IF parameter-spec-draft.md exists:
+        Use draft specification (sufficient for Stage 0)
+        LOG: "Using draft parameters. Full spec needed before Stage 2."
+      ELSE:
+        BLOCK with error: "No parameter specification found. Either:
+        1. Run quick parameter capture (/dream → option 1)
+        2. Create UI mockup first (/dream → option 2)
+        3. Manually create parameter-spec.md or parameter-spec-draft.md"
+    </check>
+  </parameter_specification>
+</preconditions>
+
 **Dispatch pattern:**
 
 1. Read contracts to pass to subagent:
    - plugins/[Name]/.ideas/creative-brief.md (REQUIRED)
+   - plugins/[Name]/.ideas/parameter-spec.md OR parameter-spec-draft.md (REQUIRED - see preconditions above)
    - plugins/[Name]/.ideas/mockups/*.yaml (if exists, for design sync)
 
 2. Construct prompt with contracts prepended:
@@ -123,7 +148,39 @@ Choose (1-6): _
 **Goal:** Calculate complexity score and create implementation plan (plan.md)
 **Duration:** 2-5 minutes
 
-**Preconditions:** parameter-spec.md AND architecture.md must exist (BLOCKING)
+**Preconditions:** (parameter-spec.md OR parameter-spec-draft.md) AND architecture.md must exist (BLOCKING)
+
+<preconditions>
+  <parameter_specification required="true">
+    Stage 1 requires parameter definitions for complexity calculation.
+
+    Accept EITHER:
+    - parameter-spec.md (full specification from finalized mockup)
+    - parameter-spec-draft.md (minimal specification from ideation)
+
+    <check>
+      IF parameter-spec.md exists:
+        Use full specification (preferred)
+        LOG: "Using full parameter specification"
+      ELSE IF parameter-spec-draft.md exists:
+        Use draft specification (sufficient for Stage 1 planning)
+        LOG: "Using draft parameters for planning. Full spec needed before Stage 2."
+      ELSE:
+        BLOCK with error: "No parameter specification found for complexity calculation"
+    </check>
+  </parameter_specification>
+
+  <architecture_specification required="true">
+    Stage 1 requires architecture.md from Stage 0 research.
+
+    <check>
+      IF architecture.md exists:
+        Use for algorithm count in complexity score
+      ELSE:
+        BLOCK with error: "Missing architecture.md. Run Stage 0 first (/plan [PluginName])"
+    </check>
+  </parameter_specification>
+</preconditions>
 
 **Process:**
 
