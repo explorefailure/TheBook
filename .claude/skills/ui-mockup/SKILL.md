@@ -249,6 +249,75 @@ Gaps identified:
 - VU meters or other feedback? (Tier 2)
 ```
 
+## Phase 2.5: Calculate Recommended Dimensions
+
+**Purpose:** Calculate space requirements before asking user for window size.
+
+**Reference:** See `.claude/skills/ui-mockup/references/layout-validation.md` Section 2 (Calculation Helpers) for formulas.
+
+**Implementation steps:**
+
+1. **Parse accumulated requirements**
+   - Count controls from creative-brief.md (if exists) and user responses
+   - Identify layout type (horizontal, vertical, grid, custom) from user descriptions
+   - Note any special elements (meters, waveforms, visualizers)
+
+2. **Estimate control sizes**
+   - Use typical sizes from layout-validation.md Section 2
+   - Example: If user mentioned "3 large knobs" → 3 × 100px × 100px
+   - Example: If user mentioned "horizontal sliders" → estimate 200px × 30px each
+   - Selection criteria:
+     - Vintage/skeuomorphic style → Large (100px knobs)
+     - Modern/minimal style → Medium (80px knobs)
+     - Utility/compact style → Small (60px knobs)
+
+3. **Apply layout-specific formula**
+   - Based on layout type, use calculation helper from layout-validation.md
+   - Example (horizontal): `min_width = sum(control_widths) + (control_count + 1) × spacing`
+   - Include margins (default: 30px left/right, 30px top/bottom)
+   - Include label space (default: 20px above controls)
+   - Use default spacing: 20px between controls
+
+4. **Calculate recommended dimensions**
+   ```
+   absolute_minimum = calculate_from_formula(layout_type, controls)
+   recommended = absolute_minimum × 1.2  # 20% breathing room
+   recommended_width = ceil(recommended.width / 50) × 50  # Round to nearest 50px
+   recommended_height = ceil(recommended.height / 50) × 50
+
+   # Enforce constraints
+   recommended_width = max(recommended_width, 400)   # Minimum 400px
+   recommended_width = min(recommended_width, 1200)  # Maximum 1200px
+   recommended_height = max(recommended_height, 300) # Minimum 300px
+   recommended_height = min(recommended_height, 800) # Maximum 800px
+   ```
+
+5. **Present calculation to user**
+   ```
+   Based on your requirements:
+   - Layout: [horizontal/vertical/grid/custom]
+   - Controls: [count] controls ([list types])
+   - Special elements: [meters/waveforms/none]
+
+   Calculated space requirements:
+   - Absolute minimum: [min_width] × [min_height] px (tight fit)
+   - Recommended: [rec_width] × [rec_height] px (comfortable spacing)
+
+   [CONTINUE TO PHASE 3 - don't ask for window size yet]
+   ```
+
+6. **Store calculated dimensions**
+   - Save recommended dimensions in context
+   - Will be used in Phase 3 when asking window size question
+
+**DO NOT ask for window size in this phase** - that happens in Phase 3 Question Batch
+
+**Integration points:**
+
+- **Before Phase 2.5:** User has provided layout preferences, control types, visual style
+- **After Phase 2.5:** Proceed to Phase 3 (Question Batch Generation)
+- **Phase 3 modification:** When generating window size question, use calculated recommended dimensions as default/suggested value
+
 ## Phase 3: Question Batch Generation
 
 **Generate exactly 4 questions using AskUserQuestion based on identified gaps.**
@@ -261,6 +330,41 @@ Gaps identified:
 - Users can skip questions via "Other" option and typing "skip"
 
 **Note:** Internal question routing uses AskUserQuestion tool, but final decision menus (Phase 5.5, Phase 10.7) MUST use inline numbered format per checkpoint protocol.
+
+**Window Size Question (uses Phase 2.5 calculations):**
+
+When window size is a gap, use calculated dimensions from Phase 2.5:
+
+```
+Question:
+  question: "Window dimensions for your plugin?"
+  header: "Window size"
+  options:
+    - label: "[calculated_width]×[calculated_height] (recommended)",
+      description: "Calculated based on your layout and controls"
+    - label: "Custom size",
+      description: "Specify different dimensions"
+```
+
+**If user chooses custom size:**
+- Ask for specific width and height
+- Compare against absolute minimum from Phase 2.5
+- If smaller than minimum, present warning (see below)
+
+**Warning for undersized windows:**
+
+If user chooses custom size smaller than absolute minimum:
+
+```
+⚠️  Warning: Your chosen size ([width]×[height]) is smaller than the calculated minimum ([min_width]×[min_height]).
+Controls may overflow or overlap.
+
+Proceed anyway?
+1. Yes, use my size (may need to adjust layout)
+2. Use recommended size instead ([rec_width]×[rec_height])
+
+Choose (1-2): _
+```
 
 **Example question batch (via AskUserQuestion):**
 
