@@ -2,13 +2,13 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://plugin-freedom-system/schemas/subagent-report.json",
   "title": "Subagent Report Schema",
-  "description": "Unified JSON schema for all subagent reports (foundation-shell-agent, dsp-agent, gui-agent). Ensures consistent report structure and validation.",
+  "description": "Unified JSON schema for all subagent reports (research-planning-agent, foundation-shell-agent, dsp-agent, gui-agent, ui-design-agent, ui-finalization-agent). Ensures consistent report structure and validation.",
   "type": "object",
   "required": ["agent", "status", "outputs"],
   "properties": {
     "agent": {
       "type": "string",
-      "enum": ["research-planning-agent", "foundation-shell-agent", "dsp-agent", "gui-agent"],
+      "enum": ["research-planning-agent", "foundation-shell-agent", "dsp-agent", "gui-agent", "ui-design-agent", "ui-finalization-agent"],
       "description": "Which subagent generated this report"
     },
     "status": {
@@ -81,6 +81,31 @@
         "attachments_created": {
           "type": "integer",
           "description": "Number of parameter attachments created (gui-agent)"
+        },
+        "version": {
+          "type": "integer",
+          "description": "UI mockup version number (ui-design-agent, ui-finalization-agent)"
+        },
+        "files_created": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "List of files created (ui-design-agent, ui-finalization-agent)"
+        },
+        "window_dimensions": {
+          "type": "string",
+          "description": "UI window dimensions (ui-design-agent)"
+        },
+        "parameter_spec_created": {
+          "type": "boolean",
+          "description": "Whether parameter-spec.md was created (ui-finalization-agent)"
+        },
+        "relay_count": {
+          "type": "integer",
+          "description": "Number of parameter relays created (ui-finalization-agent)"
+        },
+        "attachment_count": {
+          "type": "integer",
+          "description": "Number of parameter attachments created (ui-finalization-agent)"
         },
         "error_type": {
           "type": "string",
