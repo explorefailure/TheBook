@@ -241,49 +241,14 @@ Choose (1-4): _
 
 **Goal:** Ensure rollback is possible if improvement fails
 
-**Check if backup exists:**
+**Process:**
+1. Check if backup exists at `backups/[PluginName]/v[CurrentVersion]/`
+2. If missing, create backup using rsync (exclude build/ and build.log)
+3. Verify backup integrity: `./scripts/verify-backup.sh [PluginName] [CurrentVersion]`
+4. If verification fails, HALT workflow with error message
+5. If verification succeeds, present confirmation and proceed
 
-```bash
-BACKUP_PATH="backups/${PLUGIN_NAME}/v${CURRENT_VERSION}/"
-if [[ ! -d "$BACKUP_PATH" ]]; then
-  echo "⚠️ No backup found for v${CURRENT_VERSION}"
-  CREATE_BACKUP=true
-fi
-```
-
-**Create backup if missing using template:**
-
-```bash
-# See assets/backup-template.sh for complete script
-mkdir -p "backups/${PLUGIN_NAME}/v${CURRENT_VERSION}/"
-rsync -a --exclude='build/' --exclude='build.log' \
-  "plugins/${PLUGIN_NAME}/" "backups/${PLUGIN_NAME}/v${CURRENT_VERSION}/"
-```
-
-**Verify backup integrity:**
-
-```bash
-# Use verify-backup.sh script
-./scripts/verify-backup.sh "${PLUGIN_NAME}" "${CURRENT_VERSION}"
-
-if [ $? -ne 0 ]; then
-  echo "❌ Backup verification failed. Cannot proceed safely."
-  echo "Fix backup issues before continuing."
-  exit 1
-fi
-```
-
-**Present verification results:**
-
-```
-✓ Backup verified: backups/[PluginName]/v[CurrentVersion]/
-
-- All source files present
-- CMakeLists.txt valid
-- Dry-run build successful
-
-Rollback available if needed.
-```
+**See**: [assets/backup-template.sh](assets/backup-template.sh) for complete backup creation script.
 
 </critical_sequence>
 
@@ -292,23 +257,12 @@ Rollback available if needed.
 
 **DEPENDENCY:** MUST NOT execute until Phase 0.9 (Backup Verification) completes.
 
-**Load current state:**
+**Load current state (parallelize file reads):**
 
-1. Read CHANGELOG.md:
-
-```bash
-cat plugins/[PluginName]/CHANGELOG.md
-```
-
-Extract current version (e.g., v1.2.3).
-
-2. Read PLUGINS.md entry for additional context.
-
-3. Check recent commits:
-
-```bash
-git log --oneline plugins/[PluginName]/ -10
-```
+Read these files in parallel using multiple Read tool calls:
+1. CHANGELOG.md - Extract current version (e.g., v1.2.3)
+2. PLUGINS.md - Get plugin entry for additional context
+3. Git log - Check recent commits: `git log --oneline plugins/[PluginName]/ -10`
 
 **Determine version bump:**
 
@@ -417,56 +371,9 @@ Ready to implement changes for v[NewVersion]
 **DELEGATION:** MUST invoke build-automation skill for all build operations.
 **REASON:** Centralized build logic, 7-phase pipeline with verification.
 
-**Delegate to build-automation skill:**
+**1. Build:** Invoke build-automation skill - handles full build pipeline, installation, cache clearing, and failure protocol.
 
-```
-Invoking build-automation skill to build and install updated plugin...
-```
-
-build-automation will:
-
-- Run build script: `scripts/build-and-install.sh [PluginName]` (full build)
-- Build VST3 and AU formats in parallel
-- Install to system folders
-- Clear DAW caches
-- Verify installation
-
-If build succeeds:
-
-- build-automation displays success message with installation paths
-- Returns control to plugin-improve
-- Proceed to Phase 5, step 2 (Run tests)
-
-If build fails:
-
-- build-automation presents 4-option failure protocol:
-  1. Investigate (troubleshooter agent)
-  2. Show build log
-  3. Show code
-  4. Wait for manual fix
-- After resolution and successful retry, returns to plugin-improve
-- Proceed to Phase 5, step 2 (Run tests)
-
-**Note:** Build failure handling is entirely managed by build-automation skill. plugin-improve does not need custom build error menus.
-
-**2. Run tests:**
-
-Invoke `plugin-testing` skill (Phase 1b Task 8):
-
-Present test method choice:
-
-```
-Build successful. How would you like to test?
-
-1. Automated stability tests (if Tests/ exists)
-2. Build and run pluginval (recommended)
-3. Manual DAW testing checklist
-4. Skip testing (not recommended)
-
-Choose (1-4): _
-```
-
-If tests fail, present investigation options.
+**2. Test:** After build succeeds, invoke plugin-testing skill - present 4-option menu (automated tests, pluginval, manual DAW testing, skip).
 
 </delegation_rule>
 
@@ -476,157 +383,45 @@ If tests fail, present investigation options.
 **GATE CONDITION:** Conditional - only runs if both conditions met
 **GATE FAILURE:** Present rollback options, require user decision
 
-### Decision Tree
+**Conditions required:**
+1. plugin-testing skill exists
+2. Baseline backup exists at `backups/[Plugin]/v[baseline]/`
 
-```
-Does plugin-testing skill exist?
-├─ NO → Skip regression tests
-│       Warn: "Manual regression testing required (plugin-testing skill not found)"
-│       Add to CHANGELOG: "Manual regression testing required"
-│       Continue to Phase 6
-│
-└─ YES → Does baseline backup exist (backups/[Plugin]/v[baseline]/)?
-    ├─ NO → Skip regression tests
-    │       Warn: "No baseline backup found for v[baseline]"
-    │       Add to CHANGELOG: "Manual regression testing required (no baseline)"
-    │       Continue to Phase 6
-    │
-    └─ YES → Run regression tests
-            1. Build baseline version
-            2. Run tests on baseline
-            3. Run tests on current version
-            4. Compare results
-            5. Present findings with decision menu
-```
+**If conditions not met:** Skip regression tests, warn user, add note to CHANGELOG, continue to Phase 6.
 
-### Regression Test Process (if both conditions met)
+**If conditions met:**
+1. Build baseline version from backup
+2. Run plugin-testing on baseline (capture results)
+3. Run plugin-testing on current version (capture results)
+4. Compare results and present findings with decision menu
 
-**1. Determine baseline version:**
-- If improving v1.0.0 → v1.1.0, baseline is v1.0.0
-- Baseline path: `backups/[Plugin]/v[baseline]/`
-
-**2. Build baseline version:**
-```bash
-cd backups/[Plugin]/v[baseline]/
-../../scripts/build-and-install.sh --no-install
-```
-
-**3. Run tests on baseline:**
-- Invoke plugin-testing skill on baseline build
-- Capture results: BASELINE_RESULTS
-
-**4. Run tests on current version:**
-- Invoke plugin-testing skill on new build
-- Capture results: CURRENT_RESULTS
-
-**5. Compare and present:**
-
-See `references/regression-testing.md` for complete RegressionReport interface and comparison logic.
-
-**Quick summary:**
-- Collect RegressionReport (build, load, parameter, audio tests)
-- Analyze failures: critical → rollback, warnings → review, pass → deploy
-- Present results with decision menu
-
-**If regression tests fail, present rollback options before proceeding.**
+**See**: [references/regression-testing.md](references/regression-testing.md) for complete RegressionReport interface, comparison logic, and rollback decision trees.
 
 </validation_gate>
 
 ## Phase 6: Git Workflow
 
-**Stage changes:**
+**Stage changes:** `git add plugins/[PluginName]/ backups/[PluginName]-v[X.Y.Z]-[timestamp]/`
 
-```bash
-git add plugins/[PluginName]/
-git add backups/[PluginName]-v[X.Y.Z]-[timestamp]/  # Include backup in git
-```
+**Commit format:** `improve: [PluginName] v[X.Y.Z] - [description]`
 
-**Commit with conventional format:**
+**Tag release:** `git tag -a "v[X.Y.Z]" -m "[PluginName] v[X.Y.Z]"`
 
-```bash
-# Format: improve: [PluginName] v[X.Y.Z] - [brief description]
-# Example: improve: MicroGlitch v1.3.0 - add preset system
-
-git commit -m "improve: [PluginName] v[X.Y.Z] - [description]"
-```
-
-**Tag release:**
-
-```bash
-git tag -a "v[X.Y.Z]" -m "[PluginName] v[X.Y.Z]"
-```
-
-Note: Display git commands for user to run manually. Do not execute git commit or git push.
-
-**Confirm git ready:**
-
-```
-✓ Changes staged for commit
-✓ Tag ready: v[X.Y.Z]
-
-Git commit message:
-  improve: [PluginName] v[X.Y.Z] - [description]
-
-You can commit these changes when ready.
-```
+**Note:** Display git commands for user to run manually. Do not execute git commit or git push.
 
 <delegation_rule target="plugin-lifecycle" required="false">
 ## Phase 7: Installation (Optional)
 
-**DELEGATION:** If user requested installation, invoke plugin-lifecycle skill.
-**REASON:** Centralized installation logic with cache clearing and verification.
-
-**If user requested installation:**
-
-Invoke `plugin-lifecycle` skill:
-
-```
-Installing [PluginName] v[X.Y.Z]...
-```
-
-**Update state files:**
-
-After plugin-lifecycle completes installation:
-
-1. Update PLUGINS.md table row:
-   - Version: [X.Y.Z]
-   - Last Updated: [YYYY-MM-DD]
-   - Status: 📦 Installed (if previously ✅ Working)
-
-2. Update NOTES.md:
-   - Version: [X.Y.Z]
-   - Status: 📦 Installed
-   - Add timeline entry: "Installed to system folders (VST3 + AU)"
+**If user requested installation:** Invoke plugin-lifecycle skill, then update PLUGINS.md and NOTES.md (version, status, timeline entry).
 
 </delegation_rule>
 
 <checkpoint_protocol>
 ## Phase 8: Completion
 
-**MUST present numbered decision menu using inline format (NOT AskUserQuestion tool)**
+**Present numbered decision menu (inline format, NOT AskUserQuestion tool):**
 
-**Present numbered decision menu (inline format):**
-
-```
-✓ [PluginName] v[X.Y.Z] complete
-
-What's next?
-1. Test in DAW (recommended)
-2. Make another improvement
-3. Create new plugin
-4. Document this change
-5. Other
-
-Choose (1-5): _
-```
-
-**Handle responses:**
-
-- Option 1 → Provide manual testing guidance
-- Option 2 → Ask what to improve, restart workflow
-- Option 3 → Suggest `/dream` or `/implement`
-- Option 4 → Suggest creating documentation
-- Option 5 → Ask what they'd like to do
+Options: Test in DAW, Make another improvement, Create new plugin, Document this change, Other
 
 </checkpoint_protocol>
 
