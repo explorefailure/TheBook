@@ -37,7 +37,7 @@
 | AutoClip | 📦 Installed | 1.0.0 | Audio Effect (Hard Clipper) | 2025-11-13 |
 | MinimalKick | 🚧 Stage 5 | - | Synth | 2025-11-13 |
 | Drum808 | 📦 Installed | 1.0.0 | Synth (Drum Instrument) | 2025-11-13 |
-| LushPad | 🚧 Stage 4 | - | Synth (Instrument) | 2025-11-13 |
+| LushPad | 🚧 Stage 5 | - | Synth (Instrument) | 2025-11-13 |
 | Words | 💡 Ideated | - | Utility (MIDI Sequencer) | 2025-11-13 |
 
 **For detailed plugin information (lifecycle timeline, known issues, parameters, etc.), see:**

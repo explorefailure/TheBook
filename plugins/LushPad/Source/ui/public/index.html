@@ -91,22 +91,13 @@
       width: 120px;
       height: 120px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(140, 109, 84, 0.3) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(212, 165, 116, 0.4) 0%, transparent 70%);
       filter: blur(15px);
-      animation: pulse 3s ease-in-out infinite;
       pointer-events: none;
       z-index: 0;
-    }
-
-    @keyframes pulse {
-      0%, 100% {
-        opacity: 0.3;
-        transform: translate(-50%, -50%) scale(1);
-      }
-      50% {
-        opacity: 0.6;
-        transform: translate(-50%, -50%) scale(1.1);
-      }
+      opacity: 0.3;
+      will-change: opacity, transform;
+      transform: translate(-50%, -50%) translateZ(0);
     }
 
     /* CRITICAL FIX 2: Knob rotation applied to PARENT element */
@@ -229,6 +220,40 @@
     // Disable default drag behaviors
     document.addEventListener("dragstart", (e) => {
       e.preventDefault();
+    });
+
+    // ====================================================================
+    // MODULATION GLOW ANIMATION
+    // ====================================================================
+
+    // Glow animation with per-knob variation
+    let glowPhases = [0, Math.PI * 0.33, Math.PI * 0.66]; // Offset phases for variety
+    let glowSpeeds = [0.001, 0.0015, 0.0012]; // Different speeds per knob
+
+    function animateGlows() {
+      const glowElements = document.querySelectorAll(".knob-glow");
+
+      glowElements.forEach((glow, index) => {
+        // Update phase
+        glowPhases[index] += glowSpeeds[index];
+
+        // Calculate intensity with sine wave (0.3 to 0.5 range)
+        const intensity = 0.3 + Math.sin(glowPhases[index]) * 0.2;
+
+        // Calculate scale variation (1.0 to 1.1 range)
+        const scale = 1.0 + Math.sin(glowPhases[index]) * 0.05;
+
+        // Apply to element
+        glow.style.opacity = intensity;
+        glow.style.transform = `translate(-50%, -50%) scale(${scale}) translateZ(0)`;
+      });
+
+      requestAnimationFrame(animateGlows);
+    }
+
+    // Start glow animation loop on load
+    document.addEventListener("DOMContentLoaded", () => {
+      animateGlows();
     });
 
     // ====================================================================
