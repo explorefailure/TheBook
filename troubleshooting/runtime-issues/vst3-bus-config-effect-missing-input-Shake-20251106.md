@@ -187,6 +187,7 @@ Clearing `~/Library/Caches/Ableton/` doesn't touch this database. You must delet
    - Increment plugin version to force DAW rescan
 
 ## Related Issues
+- See also: [synth-no-audio-missing-is-synth-LushPad-20251113.md](synth-no-audio-missing-is-synth-LushPad-20251113.md) - Inverse problem (synth missing IS_SYNTH flag)
 - See also: dsp-filters-not-responding-to-parameters.md - Another Shake plugin issue (different root cause)
 
 **Note:** The Shake plugin is a rhythm pattern generator that creates audio from scratch (no input needed), so it should logically be IS_SYNTH=TRUE with output-only bus config. However, because it was changed to IS_SYNTH=FALSE to fix AU/VST3 category display, the bus configuration needed to match by adding an input bus (even though that input is never used by the DSP code).

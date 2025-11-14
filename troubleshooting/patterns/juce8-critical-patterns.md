@@ -1072,6 +1072,79 @@ current += (target - current) * speed
 
 ---
 
+## 22. CMakeLists.txt - IS_SYNTH Flag for Instruments (ALWAYS REQUIRED)
+
+### ❌ WRONG (No audio - MIDI not routed)
+```cmake
+# Missing IS_SYNTH flag - plugin treated as effect
+juce_add_plugin(LushPad
+    COMPANY_NAME "YourCompany"
+    PLUGIN_MANUFACTURER_CODE Manu
+    PLUGIN_CODE Lush
+    FORMATS VST3 AU Standalone
+    PRODUCT_NAME "LushPad"
+    NEEDS_WEB_BROWSER TRUE
+)
+```
+
+**Result:** Plugin loads successfully but produces no audio. Appears in DAW effects browser instead of instruments. DAW doesn't route MIDI to it.
+
+### ✅ CORRECT
+```cmake
+# IS_SYNTH TRUE declares plugin as instrument
+juce_add_plugin(LushPad
+    COMPANY_NAME "YourCompany"
+    PLUGIN_MANUFACTURER_CODE Manu
+    PLUGIN_CODE Lush
+    FORMATS VST3 AU Standalone
+    PRODUCT_NAME "LushPad"
+    IS_SYNTH TRUE           # REQUIRED for instruments
+    NEEDS_MIDI_INPUT TRUE   # Explicit MIDI requirement
+    NEEDS_WEB_BROWSER TRUE
+)
+```
+
+**Why:** JUCE uses `IS_SYNTH TRUE` to generate plugin metadata that tells DAWs this is an instrument:
+- Sets `JucePlugin_IsSynth=1` preprocessor define
+- Sets VST3 category to "Instrument|Synth" in moduleinfo.json
+- Sets AU type to `'aumu'` (Audio Unit Music Device)
+- DAWs read this metadata and enable MIDI routing automatically
+- Without it, plugin is categorized as effect (no MIDI routing)
+
+**Plugin type decision:**
+```
+Does plugin CREATE audio from scratch (no audio input needed)?
+├─ YES → IS_SYNTH TRUE + output-only BusesProperties
+│         Examples: Synth, drum machine, noise generator
+└─ NO  → IS_SYNTH FALSE + input+output BusesProperties
+          Examples: Delay, reverb, compressor, EQ
+```
+
+**Critical:** `IS_SYNTH` flag must match BusesProperties configuration in PluginProcessor.cpp:
+
+```cpp
+// For synth (IS_SYNTH TRUE) - output-only bus
+AudioProcessor(BusesProperties()
+    .withOutput("Output", juce::AudioChannelSet::stereo(), true))
+
+// For effect (IS_SYNTH FALSE) - input + output bus
+AudioProcessor(BusesProperties()
+    .withInput("Input", juce::AudioChannelSet::stereo(), true)
+    .withOutput("Output", juce::AudioChannelSet::stereo(), true))
+```
+
+**Symptoms when missing:**
+- Plugin loads without errors
+- No audio output when playing MIDI notes
+- Plugin shows in effects category, not instruments
+- Code has correct synth implementation but receives no MIDI
+
+**When:** ALL synth/instrument plugins at Stage 2 (Foundation) configuration
+
+**Documented in:** `troubleshooting/runtime-issues/synth-no-audio-missing-is-synth-LushPad-20251113.md`
+
+---
+
 All patterns documented with full context in:
 - `troubleshooting/build-failures/`
 - `troubleshooting/runtime-issues/`
