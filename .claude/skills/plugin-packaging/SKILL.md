@@ -1,13 +1,6 @@
 ---
 name: plugin-packaging
-description: Create branded PKG installers for plugin distribution
-allowed-tools:
-  - Bash
-  - Read
-  - Write
-preconditions:
-  - Plugin status is 📦 Installed (verified in step 1)
-  - VST3 and AU binaries exist in system folders (verified in step 1)
+description: Create branded PKG installers for plugin distribution. Use when user requests to package a plugin, create installer, share plugin with others, or mentions distributing/sending plugin to someone. Invoked by /package command or natural language like 'create installer for TapeAge' or 'package GainKnob'.
 ---
 
 # plugin-packaging Skill
@@ -27,11 +20,11 @@ Generates macOS PKG installers with branded UI, automated plugin installation, a
 ```
 Plugin Packaging Progress:
 - [ ] 1. Prerequisites verified (plugin installed, binaries exist)
-- [ ] 2. Metadata extracted (version, description, parameters)
+- [ ] 2. Metadata extracted (contracts read, version/description/parameters)
 - [ ] 3. Branding files created (Welcome, ReadMe, Conclusion)
 - [ ] 4. Base package built (pkgbuild complete)
 - [ ] 5. Branded installer created (productbuild complete)
-- [ ] 6. Distribution package output (files in plugins/[PluginName]/dist/)
+- [ ] 6. Distribution package output (dist/ created, committed, PLUGINS.md updated)
 ```
 
 ---
@@ -45,16 +38,19 @@ Check plugin is ready for packaging:
 
 **Blocking:** If not installed, guide user to run `/install-plugin [PluginName]` first.
 
+**Preconditions verified in this step:**
+- Plugin status is 📦 Installed
+- VST3 and AU binaries exist in system folders
+
 ### 2. Extract Plugin Metadata
 
-Gather information for branding files:
-- Read PLUGINS.md entry for plugin:
-  - Version number
-  - Description
-  - Parameter list (name, range, defaults)
-  - Use cases
-- Extract PRODUCT_NAME from `plugins/[PluginName]/CMakeLists.txt` (use grep + sed, see Section 1.2 in references/pkg-creation.md)
-- Store metadata for template population
+**Read multiple files in parallel** using multiple Read tool calls:
+- PLUGINS.md entry for plugin (version, description, parameter list, use cases)
+- `plugins/[PluginName]/CMakeLists.txt` (for PRODUCT_NAME extraction)
+- `plugins/[PluginName]/.ideas/parameter-spec.md` (detailed parameter descriptions)
+- `plugins/[PluginName]/.ideas/creative-brief.md` (features, use cases, design rationale)
+
+Extract PRODUCT_NAME using grep + sed (see Section 1.2 in references/pkg-creation.md).
 
 **Template variables to extract:**
 - {{PLUGIN_NAME}}, {{VERSION}}, {{DESCRIPTION}}
@@ -63,131 +59,59 @@ Gather information for branding files:
 
 ### 3. Create Branding Files
 
-Generate three branding text files by reading templates from `assets/` and replacing {{VARIABLE}} placeholders with actual plugin metadata (see Section 3 in references/pkg-creation.md for bash commands):
+Generate Welcome.txt, ReadMe.txt, and Conclusion.txt by reading templates from `assets/` and replacing {{VARIABLE}} placeholders with metadata from contracts (.ideas/parameter-spec.md and creative-brief.md provide richer content than PLUGINS.md).
 
-**Welcome.txt:**
-- Plugin name with TÂCHES branding
-- Brief intro (1-2 sentences)
-- What's being installed (VST3, AU, parameter count)
-- "Click Continue to begin"
-
-**ReadMe.txt:**
-- Full feature list
-- Parameter descriptions with ranges
-- Installation location details
-- Gatekeeper bypass instructions (step-by-step)
-- System requirements
-- Support contact info
-
-**Conclusion.txt:**
-- Installation success message
-- Where to find plugin in DAW
-- Quick start preset suggestions (3-5 settings)
-- Thank you message with TÂCHES signature
-
-Templates are in `assets/` (welcome-template.txt, readme-template.txt, conclusion-template.txt). See Section 3 in references/pkg-creation.md for population commands.
+See Section 3 in references/pkg-creation.md for complete bash implementation.
 
 ### 4. Build Base Package
 
 Create foundational PKG with installation logic:
 
-**4a. Create temp directory structure:**
-```bash
-mkdir -p /tmp/[PluginName]-installer/payload/[PluginName]
-mkdir -p /tmp/[PluginName]-installer/scripts
-```
+**4a. Create temp directory structure** (see Section 4a in references/pkg-creation.md)
 
-**4b. Copy binaries to payload:**
-```bash
-cp -R ~/Library/Audio/Plug-Ins/VST3/[ProductName].vst3 /tmp/[PluginName]-installer/payload/[PluginName]/
-cp -R ~/Library/Audio/Plug-Ins/Components/[ProductName].component /tmp/[PluginName]-installer/payload/[PluginName]/
-```
+**4b. Copy binaries to payload** (see Section 4a in references/pkg-creation.md)
 
-**Validation:** Verify binaries copied successfully:
-```bash
-ls /tmp/[PluginName]-installer/payload/[PluginName]/
-# Should show: [ProductName].vst3 and [ProductName].component
-```
-ONLY proceed to 4c when both files are present.
+**Validation:** Verify binaries copied successfully. ONLY proceed to 4c when both files are present.
 
-**4c. Create postinstall script:**
-- Script gets actual user (not root during install)
-- Creates plugin directories if needed
-- Copies plugins from /tmp to user's ~/Library
-- Sets correct ownership and permissions
-- Cleans up temp files
+**4c. Create postinstall script** (see Section 4b in references/pkg-creation.md for complete script)
 
-See `references/pkg-creation.md` Section 4b for complete script.
+**4d. Run pkgbuild** (see Section 4c in references/pkg-creation.md for complete command)
 
-**4d. Run pkgbuild:**
-```bash
-pkgbuild --root payload \
-         --scripts scripts \
-         --identifier com.taches.[pluginname] \
-         --version [X.Y.Z] \
-         --install-location /tmp \
-         [PluginName]-Installer.pkg
-```
-
-**Validation:** Verify base PKG created:
-```bash
-ls [PluginName]-Installer.pkg
-# File should exist and be 3-5 MB
-```
-ONLY proceed to step 5 when PKG file exists.
+**Validation:** Verify base PKG created. ONLY proceed to step 5 when PKG file exists.
 
 ### 5. Build Branded Installer
 
 Wrap base package with branding:
 
-**5a. Create Distribution.xml:**
-- Title: "[PluginName] by TÂCHES"
-- Organization: com.taches
-- Reference branding files (Welcome/ReadMe/Conclusion)
-- Reference base PKG
+**5a. Create Distribution.xml** (see Section 5a in references/pkg-creation.md for complete XML structure)
 
-See `references/pkg-creation.md` Section 5a for complete XML structure.
+**5b. Run productbuild** (see Section 5b in references/pkg-creation.md for complete command)
 
-**5b. Run productbuild:**
-```bash
-productbuild --distribution Distribution.xml \
-             --resources resources \
-             --package-path . \
-             "[PluginName]-by-TACHES.pkg"
-```
-
-**Validation:** Verify branded PKG created:
-```bash
-ls [PluginName]-by-TACHES.pkg
-# File should exist and be slightly larger than base PKG
-```
-ONLY proceed to step 6 when branded PKG exists.
-
-Result: Branded PKG with custom installer screens.
+**Validation:** Verify branded PKG created. ONLY proceed to step 6 when branded PKG exists.
 
 ### 6. Output Distribution Package
 
 Finalize and present to user:
 
-**6a. Create dist directory:**
+**6a. Create dist directory** (see Section 6a in references/pkg-creation.md)
+
+**6b. Copy installer** (see Section 6b in references/pkg-creation.md)
+
+**6c. Generate install-readme.txt** (see Section 6c in references/pkg-creation.md for complete template)
+
+**6d. Commit distribution package:**
 ```bash
-mkdir -p plugins/[PluginName]/dist
+git add plugins/[PluginName]/dist/
+git commit -m "feat([PluginName]): create v[X.Y.Z] distribution package"
 ```
 
-**6b. Copy installer:**
-```bash
-cp /tmp/[PluginName]-installer/[PluginName]-by-TACHES.pkg plugins/[PluginName]/dist/
+**6e. Update PLUGINS.md** with packaging metadata:
+```markdown
+**Last Packaged:** YYYY-MM-DD
+**Distribution:** plugins/[PluginName]/dist/[PluginName]-by-TACHES.pkg (X.X MB)
 ```
 
-**6c. Generate install-readme.txt:**
-- File list (what to send)
-- Installation steps
-- Gatekeeper bypass instructions
-- Troubleshooting tips
-
-Template structure: installation steps, Gatekeeper bypass instructions, plugin info, uninstallation, support contact. See Section 6c in references/pkg-creation.md for complete template.
-
-**6d. Display summary:**
+**6f. Display summary:**
 ```
 ✓ [PluginName] packaged successfully
 
@@ -224,7 +148,8 @@ Send both files to your friend.
 - `plugins/[PluginName]/dist/install-readme.txt` → Installation guide
 
 **Updates:**
-- None (packaging doesn't modify plugin state)
+- `PLUGINS.md` → Add **Last Packaged:** timestamp and **Distribution:** package path/size
+- Git repository → Commit dist/ folder with distribution package
 
 ---
 
@@ -262,25 +187,7 @@ Choose (1-5): _
 
 ## Error Handling
 
-Common error scenarios:
-
-**Plugin not installed:**
-- Error: "Cannot package [PluginName] - plugin not installed"
-- Solution: Guide to run `/install-plugin [PluginName]` first
-
-**Binaries not found:**
-- Error: "VST3 or AU not found in system folders"
-- Solution: Verify installation, check PRODUCT_NAME matches
-
-**pkgbuild/productbuild failed:**
-- Error: Display build tool error message
-- Solution: Check permissions, disk space, tool installation
-
-**Brand name missing:**
-- Error: "TÂCHES branding not found in templates"
-- Solution: Verify assets/ directory has template files
-
-Common errors are documented above. See references/pkg-creation.md Section 6 for additional error scenarios.
+For error scenarios and troubleshooting, see references/pkg-creation.md Section 6 (Error Scenarios).
 
 ---
 
