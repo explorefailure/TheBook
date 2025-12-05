@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChopShop UI Mockup v1 - Retro-Futuristic Junkyard</title>
+
+  <style>
+    /* CRITICAL: WebView constraints */
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      /* Native application feel */
+      user-select: none;
+      -webkit-user-select: none;
+      cursor: default;
+      overflow: hidden;
+
+      /* Test frame centering */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+      font-family: Arial, sans-serif;
+    }
+
+    /* Fixed-size preview frame matching plugin spec */
+    .plugin-frame {
+      width: 650px;
+      height: 300px;
+      border: 2px solid #b87333;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Plugin UI container */
+    .container {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      background: linear-gradient(135deg, #1a1d1a 0%, #0d0f0d 100%);
+    }
+
+    /* Weathered metal background with patina */
+    .background-texture {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 30% 40%, rgba(75, 107, 82, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 70% 60%, rgba(75, 107, 82, 0.1) 0%, transparent 50%),
+        linear-gradient(180deg, rgba(45, 58, 45, 0.3) 0%, transparent 100%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Rivets decoration */
+    .rivet {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #3d3d3d, #0d0f0d);
+      box-shadow:
+        inset -1px -1px 2px rgba(0,0,0,0.8),
+        inset 1px 1px 1px rgba(255,255,255,0.1);
+    }
+
+    /* Googie atomic age accent curves */
+    .googie-accent {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: 3px solid rgba(91, 192, 190, 0.2);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* Title - stencil lettering */
+    .title {
+      position: absolute;
+      left: 25px;
+      top: 15px;
+      font-family: 'Courier New', monospace;
+      font-size: 20px;
+      font-weight: bold;
+      color: #fde8cd;
+      letter-spacing: 3px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+      z-index: 10;
+    }
+
+    /* Bakelite knob styling */
+    .knob {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .knob-body {
+      position: relative;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #4a6b52, #2d3a2d);
+      cursor: pointer;
+      transition: transform 0.05s ease-out;
+      transform-origin: center center;
+    }
+
+    /* Bakelite ridges texture */
+    .knob-body::before {
+      content: '';
+      position: absolute;
+      inset: 8%;
+      border-radius: 50%;
+      background:
+        repeating-conic-gradient(
+          from 0deg,
+          transparent 0deg,
+          transparent 4deg,
+          rgba(0,0,0,0.15) 4deg,
+          rgba(0,0,0,0.15) 5deg
+        );
+      pointer-events: none;
+    }
+
+    /* Fixed lighting layer (doesn't rotate) */
+    .knob-lighting {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      box-shadow:
+        inset -3px -3px 6px rgba(0,0,0,0.6),
+        inset 3px 3px 6px rgba(255,255,255,0.1);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* Brass/copper indicator (rotates with body) */
+    .knob-indicator {
+      position: absolute;
+      top: 12%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 3px;
+      height: 25%;
+      background: linear-gradient(180deg, #b87333, #8b5a2b);
+      border-radius: 2px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.6);
+    }
+
+    .knob-label {
+      margin-top: 8px;
+      font-size: 11px;
+      color: #fde8cd;
+      letter-spacing: 1px;
+      font-weight: bold;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    }
+
+    .knob-value {
+      margin-top: 2px;
+      font-size: 13px;
+      color: #b87333;
+      font-family: 'Courier New', monospace;
+    }
+
+    /* Large knob */
+    .knob-large .knob-body {
+      width: 90px;
+      height: 90px;
+    }
+
+    /* Small knob */
+    .knob-small .knob-body {
+      width: 60px;
+      height: 60px;
+    }
+
+    .knob-small .knob-indicator {
+      height: 20%;
+    }
+
+    /* Effect block - modular patch module */
+    .effect-block {
+      position: absolute;
+      width: 70px;
+      height: 70px;
+      background: linear-gradient(135deg, #2d3a2d, #1a1d1a);
+      border: 2px solid #b87333;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: bold;
+      color: #fde8cd;
+      letter-spacing: 1px;
+      cursor: move;
+      box-shadow:
+        inset -2px -2px 4px rgba(0,0,0,0.4),
+        inset 2px 2px 4px rgba(255,255,255,0.05),
+        0 4px 8px rgba(0,0,0,0.6);
+      z-index: 10;
+      transition: box-shadow 0.2s, border-color 0.2s;
+    }
+
+    .effect-block:hover {
+      border-color: #ff6b35;
+      box-shadow:
+        inset -2px -2px 4px rgba(0,0,0,0.4),
+        inset 2px 2px 4px rgba(255,255,255,0.05),
+        0 0 12px rgba(255, 107, 53, 0.4);
+    }
+
+    /* Corner rivets on effect blocks */
+    .effect-block::before,
+    .effect-block::after {
+      content: '';
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #666, #0d0f0d);
+      box-shadow: inset -1px -1px 1px rgba(0,0,0,0.8);
+    }
+
+    .effect-block::before {
+      top: 4px;
+      left: 4px;
+    }
+
+    .effect-block::after {
+      top: 4px;
+      right: 4px;
+    }
+
+    /* Patch cables (SVG) */
+    .patch-cables {
+      position: absolute;
+      top: 95px;
+      left: 160px;
+      width: 340px;
+      height: 40px;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    /* Atomic age toggle switch */
+    .toggle {
+      position: absolute;
+      width: 50px;
+      height: 30px;
+      z-index: 10;
+    }
+
+    .toggle-track {
+      width: 100%;
+      height: 100%;
+      background: #1a1d1a;
+      border: 2px solid #4a6b52;
+      border-radius: 15px;
+      position: relative;
+      cursor: pointer;
+      transition: border-color 0.3s;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.6);
+    }
+
+    .toggle-track.active {
+      border-color: #5bc0be;
+    }
+
+    .toggle-handle {
+      position: absolute;
+      top: 3px;
+      width: 20px;
+      height: 20px;
+      background: radial-gradient(circle at 35% 35%, #d4a373, #b87333);
+      border-radius: 50%;
+      transition: left 0.3s ease;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.6);
+    }
+
+    .toggle-track:not(.active) .toggle-handle {
+      left: 3px;
+    }
+
+    .toggle-track.active .toggle-handle {
+      left: 23px;
+    }
+
+    .toggle-label {
+      position: absolute;
+      top: 35px;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      font-size: 9px;
+      color: #fde8cd;
+      letter-spacing: 0.5px;
+    }
+
+    /* Mechanical selector (combo box) */
+    .selector {
+      position: absolute;
+      z-index: 10;
+    }
+
+    .selector-button {
+      width: 110px;
+      height: 35px;
+      background: linear-gradient(180deg, #2d3a2d, #1a1d1a);
+      border: 2px solid #b87333;
+      border-radius: 4px;
+      color: #fde8cd;
+      font-size: 12px;
+      font-weight: bold;
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      box-shadow:
+        inset -1px -1px 2px rgba(0,0,0,0.4),
+        0 2px 4px rgba(0,0,0,0.6);
+    }
+
+    .selector-button:hover {
+      border-color: #5bc0be;
+    }
+
+    .selector-arrow {
+      width: 0;
+      height: 0;
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-top: 5px solid #b87333;
+    }
+
+    .selector-label {
+      position: absolute;
+      top: 40px;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      font-size: 9px;
+      color: #fde8cd;
+      letter-spacing: 0.5px;
+    }
+
+    /* Debug monitor (test only) */
+    .debug-monitor {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.9);
+      color: #5bc0be;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      padding: 10px 14px;
+      border: 2px solid #b87333;
+      border-radius: 4px;
+      min-width: 180px;
+      pointer-events: none;
+      z-index: 10000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.8);
+    }
+
+    .debug-label {
+      color: #b87333;
+      font-size: 9px;
+      margin-bottom: 6px;
+      letter-spacing: 1px;
+    }
+
+    .debug-param {
+      font-weight: bold;
+      color: #5bc0be;
+    }
+
+    .debug-value {
+      color: #fde8cd;
+      margin-top: 3px;
+    }
+
+    .debug-normalized {
+      color: #888;
+      font-size: 10px;
+      margin-top: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="plugin-frame">
+    <div class="container">
+      <!-- Background texture -->
+      <div class="background-texture"></div>
+
+      <!-- Rivets decoration -->
+      <div class="rivet" style="left: 15px; top: 20px;"></div>
+      <div class="rivet" style="right: 15px; top: 20px;"></div>
+      <div class="rivet" style="left: 15px; bottom: 20px;"></div>
+      <div class="rivet" style="right: 15px; bottom: 20px;"></div>
+      <div class="rivet" style="left: 140px; top: 45px;"></div>
+      <div class="rivet" style="left: 520px; top: 45px;"></div>
+      <div class="rivet" style="left: 140px; bottom: 45px;"></div>
+      <div class="rivet" style="left: 520px; bottom: 45px;"></div>
+
+      <!-- Googie atomic accents -->
+      <div class="googie-accent" style="right: -20px; top: -20px;"></div>
+      <div class="googie-accent" style="left: -30px; bottom: -30px;"></div>
+
+      <!-- Title -->
+      <div class="title">CHOPSHOP</div>
+
+      <!-- Stutter Rate - Large central knob -->
+      <div class="knob knob-large" style="left: 40px; top: 50px;" data-param="stutterRate" data-choices='["1/1", "1/2", "1/4", "1/8", "1/16", "1/32", "1/64"]' data-value="3">
+        <div class="knob-body" id="knob-stutterRate">
+          <div class="knob-indicator"></div>
+          <div class="knob-lighting"></div>
+        </div>
+        <div class="knob-label">STUTTER RATE</div>
+        <div class="knob-value" id="value-stutterRate">1/8</div>
+      </div>
+
+      <!-- Effect Chain Blocks -->
+      <div class="effect-block" style="left: 160px; top: 60px;" data-order="1">
+        STUTTER
+      </div>
+      <div class="effect-block" style="left: 250px; top: 60px;" data-order="2">
+        PITCH
+      </div>
+      <div class="effect-block" style="left: 340px; top: 60px;" data-order="3">
+        SPEED
+      </div>
+      <div class="effect-block" style="left: 430px; top: 60px;" data-order="4">
+        REVERSE
+      </div>
+
+      <!-- Patch cables SVG -->
+      <svg class="patch-cables" viewBox="0 0 340 40" xmlns="http://www.w3.org/2000/svg">
+        <!-- Cable 1: STUTTER to PITCH -->
+        <path d="M 35 5 Q 45 15, 55 5" stroke="#5bc0be" stroke-width="2" fill="none" opacity="0.6"/>
+        <!-- Cable 2: PITCH to SPEED -->
+        <path d="M 125 5 Q 135 15, 145 5" stroke="#ff6b35" stroke-width="2" fill="none" opacity="0.6"/>
+        <!-- Cable 3: SPEED to REVERSE -->
+        <path d="M 215 5 Q 225 15, 235 5" stroke="#5bc0be" stroke-width="2" fill="none" opacity="0.6"/>
+        <!-- Cable connectors (jacks) -->
+        <circle cx="35" cy="5" r="3" fill="#b87333"/>
+        <circle cx="55" cy="5" r="3" fill="#b87333"/>
+        <circle cx="125" cy="5" r="3" fill="#b87333"/>
+        <circle cx="145" cy="5" r="3" fill="#b87333"/>
+        <circle cx="215" cy="5" r="3" fill="#b87333"/>
+        <circle cx="235" cy="5" r="3" fill="#b87333"/>
+      </svg>
+
+      <!-- Pitch Shift Knob -->
+      <div class="knob knob-small" style="left: 40px; top: 175px;" data-param="pitchShift" data-min="-24" data-max="24" data-value="0">
+        <div class="knob-body" id="knob-pitchShift">
+          <div class="knob-indicator"></div>
+          <div class="knob-lighting"></div>
+        </div>
+        <div class="knob-label">PITCH</div>
+        <div class="knob-value" id="value-pitchShift">0 st</div>
+      </div>
+
+      <!-- Speed Knob -->
+      <div class="knob knob-small" style="left: 120px; top: 175px;" data-param="speed" data-min="50" data-max="200" data-value="100">
+        <div class="knob-body" id="knob-speed">
+          <div class="knob-indicator"></div>
+          <div class="knob-lighting"></div>
+        </div>
+        <div class="knob-label">SPEED</div>
+        <div class="knob-value" id="value-speed">100%</div>
+      </div>
+
+      <!-- Link Toggle -->
+      <div class="toggle" style="left: 200px; top: 195px;" data-param="linkPitchSpeed" data-value="false">
+        <div class="toggle-track" id="toggle-linkPitchSpeed">
+          <div class="toggle-handle"></div>
+        </div>
+        <div class="toggle-label">LINK</div>
+      </div>
+
+      <!-- Trigger Mode Selector -->
+      <div class="selector" style="left: 270px; top: 190px;" data-param="triggerMode" data-choices='["Always", "MIDI", "Threshold"]' data-value="0">
+        <div class="selector-button" id="selector-triggerMode">
+          <span id="value-triggerMode">Always</span>
+          <div class="selector-arrow"></div>
+        </div>
+        <div class="selector-label">TRIGGER</div>
+      </div>
+
+      <!-- Threshold Knob -->
+      <div class="knob knob-small" style="left: 400px; top: 175px;" data-param="threshold" data-min="-60" data-max="0" data-value="-20">
+        <div class="knob-body" id="knob-threshold">
+          <div class="knob-indicator"></div>
+          <div class="knob-lighting"></div>
+        </div>
+        <div class="knob-label">THRESH</div>
+        <div class="knob-value" id="value-threshold">-20.0 dB</div>
+      </div>
+
+      <!-- Reverse Toggle -->
+      <div class="toggle" style="left: 480px; top: 195px;" data-param="reverse" data-value="false">
+        <div class="toggle-track" id="toggle-reverse">
+          <div class="toggle-handle"></div>
+        </div>
+        <div class="toggle-label">REVERSE</div>
+      </div>
+
+      <!-- Mix Knob -->
+      <div class="knob knob-small" style="left: 560px; top: 175px;" data-param="mix" data-min="0" data-max="100" data-value="100">
+        <div class="knob-body" id="knob-mix">
+          <div class="knob-indicator"></div>
+          <div class="knob-lighting"></div>
+        </div>
+        <div class="knob-label">MIX</div>
+        <div class="knob-value" id="value-mix">100%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Debug monitor -->
+  <div class="debug-monitor">
+    <div class="debug-label">PARAMETER MONITOR</div>
+    <div class="debug-param" id="debugParam">—</div>
+    <div class="debug-value" id="debugValue">—</div>
+    <div class="debug-normalized" id="debugNormalized">—</div>
+  </div>
+
+  <script>
+    // Mock JUCE backend for browser testing
+    window.Juce = {
+      getSliderState: (id) => ({
+        normalisedValue: 0.5,
+        getNormalisedValue: () => 0.5,
+        setNormalisedValue: (v) => console.log(`${id} set to ${v}`),
+        valueChangedEvent: {
+          addListener: (fn) => console.log(`Listener added for ${id}`)
+        }
+      }),
+      getToggleState: (id) => ({
+        value: false,
+        valueChangedEvent: {
+          addListener: (fn) => console.log(`Listener added for ${id}`)
+        }
+      }),
+      getComboBoxState: (id) => ({
+        selectedId: 0,
+        valueChangedEvent: {
+          addListener: (fn) => console.log(`Listener added for ${id}`)
+        }
+      })
+    };
+
+    // Disable context menu (REQUIRED)
+    document.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      return false;
+    });
+
+    // Debug monitor update
+    function updateDebugMonitor(paramId, value, normalizedValue) {
+      document.getElementById('debugParam').textContent = paramId;
+      document.getElementById('debugValue').textContent = value;
+      document.getElementById('debugNormalized').textContent = `${(normalizedValue * 100).toFixed(1)}%`;
+    }
+
+    // Knob rotation logic
+    function initKnob(knobElement) {
+      const knobBody = knobElement.querySelector('.knob-body');
+      const paramId = knobElement.dataset.param;
+      const choices = knobElement.dataset.choices ? JSON.parse(knobElement.dataset.choices) : null;
+      const min = choices ? 0 : parseFloat(knobElement.dataset.min || 0);
+      const max = choices ? choices.length - 1 : parseFloat(knobElement.dataset.max || 1);
+      let value = parseFloat(knobElement.dataset.value || 0);
+
+      const valueDisplay = document.getElementById(`value-${paramId}`);
+
+      function updateKnob(newValue) {
+        value = Math.max(min, Math.min(max, newValue));
+        const normalized = (value - min) / (max - min);
+        const degrees = -135 + (normalized * 270);
+
+        // Rotate entire knob body (not just indicator)
+        knobBody.style.transform = `rotate(${degrees}deg)`;
+
+        // Update value display
+        if (choices) {
+          valueDisplay.textContent = choices[Math.round(value)];
+        } else {
+          const unit = knobElement.dataset.unit || '';
+          valueDisplay.textContent = `${value.toFixed(1)} ${unit}`.trim();
+        }
+
+        updateDebugMonitor(paramId, valueDisplay.textContent, normalized);
+        console.log(`${paramId}: ${value} (${(normalized * 100).toFixed(1)}%)`);
+      }
+
+      let isDragging = false;
+      let startY = 0;
+      let startValue = value;
+
+      knobBody.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        startY = e.clientY;
+        startValue = value;
+        e.preventDefault();
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const deltaY = startY - e.clientY;
+        const range = max - min;
+        const sensitivity = choices ? 0.5 : 0.01;
+        const newValue = startValue + (deltaY * range * sensitivity);
+        updateKnob(newValue);
+      });
+
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+      });
+
+      // Scroll wheel support
+      knobBody.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -1 : 1;
+        const step = choices ? 1 : (max - min) / 100;
+        updateKnob(value + (delta * step));
+      });
+
+      updateKnob(value);
+    }
+
+    // Toggle switch logic
+    function initToggle(toggleElement) {
+      const track = toggleElement.querySelector('.toggle-track');
+      const paramId = toggleElement.dataset.param;
+      let active = toggleElement.dataset.value === 'true';
+
+      function updateToggle() {
+        if (active) {
+          track.classList.add('active');
+        } else {
+          track.classList.remove('active');
+        }
+        updateDebugMonitor(paramId, active ? 'ON' : 'OFF', active ? 1.0 : 0.0);
+        console.log(`${paramId}: ${active}`);
+      }
+
+      track.addEventListener('click', () => {
+        active = !active;
+        updateToggle();
+      });
+
+      updateToggle();
+    }
+
+    // Selector (combo box) logic
+    function initSelector(selectorElement) {
+      const button = selectorElement.querySelector('.selector-button');
+      const valueDisplay = document.getElementById(`value-${selectorElement.dataset.param}`);
+      const paramId = selectorElement.dataset.param;
+      const choices = JSON.parse(selectorElement.dataset.choices);
+      let selectedIndex = parseInt(selectorElement.dataset.value || 0);
+
+      function updateSelector() {
+        valueDisplay.textContent = choices[selectedIndex];
+        const normalized = selectedIndex / (choices.length - 1);
+        updateDebugMonitor(paramId, choices[selectedIndex], normalized);
+        console.log(`${paramId}: ${choices[selectedIndex]} (${selectedIndex})`);
+      }
+
+      button.addEventListener('click', () => {
+        selectedIndex = (selectedIndex + 1) % choices.length;
+        updateSelector();
+      });
+
+      updateSelector();
+    }
+
+    // Initialize all controls
+    document.addEventListener('DOMContentLoaded', () => {
+      // Initialize knobs
+      document.querySelectorAll('.knob').forEach(initKnob);
+
+      // Initialize toggles
+      document.querySelectorAll('.toggle').forEach(initToggle);
+
+      // Initialize selectors
+      document.querySelectorAll('.selector').forEach(initSelector);
+
+      console.log('ChopShop v1 UI mockup loaded - Retro-futuristic junkyard aesthetic');
+    });
+  </script>
+</body>
+</html>
