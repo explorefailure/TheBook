@@ -175,10 +175,15 @@
       font-family: 'Courier New', monospace;
     }
 
-    /* Large knob */
+    /* Large knob - hero control */
     .knob-large .knob-body {
-      width: 90px;
-      height: 90px;
+      width: 120px;
+      height: 120px;
+    }
+
+    .knob-large .knob-indicator {
+      height: 28%;
+      width: 4px;
     }
 
     /* Small knob */
@@ -423,8 +428,8 @@
       <!-- Title -->
       <div class="title">CHOPSHOP</div>
 
-      <!-- Stutter Rate - Large central knob -->
-      <div class="knob knob-large" style="left: 40px; top: 50px;" data-param="stutterRate" data-choices='["1/1", "1/2", "1/4", "1/8", "1/16", "1/32", "1/64"]' data-value="3">
+      <!-- Stutter Rate - Large central hero knob -->
+      <div class="knob knob-large" style="left: 265px; top: 70px;" data-param="stutterRate" data-choices='["1/1", "1/2", "1/4", "1/8", "1/16", "1/32", "1/64"]' data-value="3">
         <div class="knob-body" id="knob-stutterRate">
           <div class="knob-indicator"></div>
           <div class="knob-lighting"></div>
@@ -433,39 +438,41 @@
         <div class="knob-value" id="value-stutterRate">1/8</div>
       </div>
 
-      <!-- Effect Chain Blocks -->
-      <div class="effect-block" style="left: 160px; top: 60px;" data-order="1">
+      <!-- Effect Chain Blocks - top row spanning width -->
+      <div class="effect-block" style="left: 150px; top: 15px;" data-order="1">
         STUTTER
       </div>
-      <div class="effect-block" style="left: 250px; top: 60px;" data-order="2">
+      <div class="effect-block" style="left: 240px; top: 15px;" data-order="2">
         PITCH
       </div>
-      <div class="effect-block" style="left: 340px; top: 60px;" data-order="3">
+      <div class="effect-block" style="left: 330px; top: 15px;" data-order="3">
         SPEED
       </div>
-      <div class="effect-block" style="left: 430px; top: 60px;" data-order="4">
+      <div class="effect-block" style="left: 420px; top: 15px;" data-order="4">
         REVERSE
       </div>
 
-      <!-- Patch cables SVG -->
-      <svg class="patch-cables" viewBox="0 0 340 40" xmlns="http://www.w3.org/2000/svg">
+      <!-- Patch cables SVG - repositioned for top chain -->
+      <svg class="patch-cables" style="top: 50px; left: 150px;" viewBox="0 0 340 40" xmlns="http://www.w3.org/2000/svg">
         <!-- Cable 1: STUTTER to PITCH -->
-        <path d="M 35 5 Q 45 15, 55 5" stroke="#5bc0be" stroke-width="2" fill="none" opacity="0.6"/>
+        <path d="M 35 5 Q 45 18, 55 5" stroke="#5bc0be" stroke-width="2.5" fill="none" opacity="0.7"/>
         <!-- Cable 2: PITCH to SPEED -->
-        <path d="M 125 5 Q 135 15, 145 5" stroke="#ff6b35" stroke-width="2" fill="none" opacity="0.6"/>
+        <path d="M 125 5 Q 135 18, 145 5" stroke="#ff6b35" stroke-width="2.5" fill="none" opacity="0.7"/>
         <!-- Cable 3: SPEED to REVERSE -->
-        <path d="M 215 5 Q 225 15, 235 5" stroke="#5bc0be" stroke-width="2" fill="none" opacity="0.6"/>
+        <path d="M 215 5 Q 225 18, 235 5" stroke="#5bc0be" stroke-width="2.5" fill="none" opacity="0.7"/>
         <!-- Cable connectors (jacks) -->
-        <circle cx="35" cy="5" r="3" fill="#b87333"/>
-        <circle cx="55" cy="5" r="3" fill="#b87333"/>
-        <circle cx="125" cy="5" r="3" fill="#b87333"/>
-        <circle cx="145" cy="5" r="3" fill="#b87333"/>
-        <circle cx="215" cy="5" r="3" fill="#b87333"/>
-        <circle cx="235" cy="5" r="3" fill="#b87333"/>
+        <circle cx="35" cy="5" r="4" fill="#b87333"/>
+        <circle cx="55" cy="5" r="4" fill="#b87333"/>
+        <circle cx="125" cy="5" r="4" fill="#b87333"/>
+        <circle cx="145" cy="5" r="4" fill="#b87333"/>
+        <circle cx="215" cy="5" r="4" fill="#b87333"/>
+        <circle cx="235" cy="5" r="4" fill="#b87333"/>
       </svg>
 
+      <!-- LEFT SIDE CONTROLS -->
+
       <!-- Pitch Shift Knob -->
-      <div class="knob knob-small" style="left: 40px; top: 175px;" data-param="pitchShift" data-min="-24" data-max="24" data-value="0">
+      <div class="knob knob-small" style="left: 25px; top: 100px;" data-param="pitchShift" data-min="-24" data-max="24" data-value="0">
         <div class="knob-body" id="knob-pitchShift">
           <div class="knob-indicator"></div>
           <div class="knob-lighting"></div>
@@ -475,7 +482,7 @@
       </div>
 
       <!-- Speed Knob -->
-      <div class="knob knob-small" style="left: 120px; top: 175px;" data-param="speed" data-min="50" data-max="200" data-value="100">
+      <div class="knob knob-small" style="left: 100px; top: 100px;" data-param="speed" data-min="50" data-max="200" data-value="100">
         <div class="knob-body" id="knob-speed">
           <div class="knob-indicator"></div>
           <div class="knob-lighting"></div>
@@ -485,15 +492,17 @@
       </div>
 
       <!-- Link Toggle -->
-      <div class="toggle" style="left: 200px; top: 195px;" data-param="linkPitchSpeed" data-value="false">
+      <div class="toggle" style="left: 62px; top: 200px;" data-param="linkPitchSpeed" data-value="false">
         <div class="toggle-track" id="toggle-linkPitchSpeed">
           <div class="toggle-handle"></div>
         </div>
-        <div class="toggle-label">LINK</div>
+        <div class="toggle-label">LINK P/S</div>
       </div>
 
+      <!-- RIGHT SIDE CONTROLS -->
+
       <!-- Trigger Mode Selector -->
-      <div class="selector" style="left: 270px; top: 190px;" data-param="triggerMode" data-choices='["Always", "MIDI", "Threshold"]' data-value="0">
+      <div class="selector" style="left: 430px; top: 100px;" data-param="triggerMode" data-choices='["Always", "MIDI", "Threshold"]' data-value="0">
         <div class="selector-button" id="selector-triggerMode">
           <span id="value-triggerMode">Always</span>
           <div class="selector-arrow"></div>
@@ -502,17 +511,17 @@
       </div>
 
       <!-- Threshold Knob -->
-      <div class="knob knob-small" style="left: 400px; top: 175px;" data-param="threshold" data-min="-60" data-max="0" data-value="-20">
+      <div class="knob knob-small" style="left: 555px; top: 100px;" data-param="threshold" data-min="-60" data-max="0" data-value="-20">
         <div class="knob-body" id="knob-threshold">
           <div class="knob-indicator"></div>
           <div class="knob-lighting"></div>
         </div>
         <div class="knob-label">THRESH</div>
-        <div class="knob-value" id="value-threshold">-20.0 dB</div>
+        <div class="knob-value" id="value-threshold">-20 dB</div>
       </div>
 
       <!-- Reverse Toggle -->
-      <div class="toggle" style="left: 480px; top: 195px;" data-param="reverse" data-value="false">
+      <div class="toggle" style="left: 430px; top: 200px;" data-param="reverse" data-value="false">
         <div class="toggle-track" id="toggle-reverse">
           <div class="toggle-handle"></div>
         </div>
@@ -520,7 +529,7 @@
       </div>
 
       <!-- Mix Knob -->
-      <div class="knob knob-small" style="left: 560px; top: 175px;" data-param="mix" data-min="0" data-max="100" data-value="100">
+      <div class="knob knob-small" style="left: 555px; top: 200px;" data-param="mix" data-min="0" data-max="100" data-value="100">
         <div class="knob-body" id="knob-mix">
           <div class="knob-indicator"></div>
           <div class="knob-lighting"></div>
