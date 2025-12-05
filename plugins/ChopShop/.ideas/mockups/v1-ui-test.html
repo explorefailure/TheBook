@@ -623,8 +623,13 @@
         if (!isDragging) return;
         const deltaY = startY - e.clientY;
         const range = max - min;
-        const sensitivity = choices ? 0.5 : 0.01;
-        const newValue = startValue + (deltaY * range * sensitivity);
+        // Much lower sensitivity for discrete choices (stepped knobs)
+        const sensitivity = choices ? 0.03 : 0.005;
+        let newValue = startValue + (deltaY * range * sensitivity);
+        // For discrete choices, snap to integer steps
+        if (choices) {
+          newValue = Math.round(newValue);
+        }
         updateKnob(newValue);
       });
 
