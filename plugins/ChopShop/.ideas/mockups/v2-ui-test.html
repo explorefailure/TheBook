@@ -138,55 +138,93 @@
       text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
     }
 
-    /* Mini module knob */
+    /* Mini module knob - larger and more visible */
     .mini-knob {
       position: absolute;
-      top: 22px;
-      left: 33px;
-      width: 24px;
-      height: 24px;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 30px;
+      height: 30px;
       border-radius: 50%;
-      background: radial-gradient(circle at 35% 35%, #2d3a2d, #1a1d1a);
+      background: radial-gradient(circle at 35% 35%, #4a6b52, #2d3a2d);
       cursor: pointer;
-      transition: transform 0.05s ease-out;
       transform-origin: center center;
       box-shadow:
-        inset -2px -2px 3px rgba(0,0,0,0.6),
-        inset 1px 1px 2px rgba(255,255,255,0.1);
+        inset -2px -2px 4px rgba(0,0,0,0.6),
+        inset 2px 2px 3px rgba(255,255,255,0.1),
+        0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    .mini-knob:hover {
+      box-shadow:
+        inset -2px -2px 4px rgba(0,0,0,0.6),
+        inset 2px 2px 3px rgba(255,255,255,0.1),
+        0 0 8px rgba(91, 192, 190, 0.5),
+        0 2px 4px rgba(0,0,0,0.5);
     }
 
     .mini-knob-indicator {
       position: absolute;
-      top: 3px;
+      top: 4px;
       left: 50%;
       transform: translateX(-50%);
-      width: 2px;
-      height: 6px;
-      background: #5bc0be;
-      border-radius: 1px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.6);
+      width: 3px;
+      height: 8px;
+      background: linear-gradient(180deg, #5bc0be, #3a8a88);
+      border-radius: 2px;
+      box-shadow: 0 0 4px rgba(91, 192, 190, 0.6);
     }
 
-    /* Jack (connection point) */
+    /* Jack (connection point) - realistic modular socket */
     .jack {
       position: absolute;
-      width: 12px;
-      height: 12px;
+      width: 18px;
+      height: 18px;
       border-radius: 50%;
-      background: radial-gradient(circle at 35% 35%, #d4a373, #b87333);
-      border: 2px solid #8b5a2b;
+      /* Outer metal ring */
+      background:
+        radial-gradient(circle at 50% 50%, #0a0a0a 0%, #0a0a0a 30%, transparent 31%),
+        radial-gradient(circle at 40% 40%, #e8c89a, #b87333 60%, #8b5a2b 100%);
+      border: 2px solid #6b4423;
       cursor: pointer;
       z-index: 10;
-      transition: box-shadow 0.2s;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.6);
+      transition: box-shadow 0.2s, transform 0.1s;
+      box-shadow:
+        inset 0 2px 4px rgba(255,255,255,0.2),
+        inset 0 -2px 4px rgba(0,0,0,0.4),
+        0 3px 6px rgba(0,0,0,0.8);
+    }
+
+    /* Inner socket hole */
+    .jack::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #1a1a1a, #000);
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.9);
     }
 
     .jack:hover {
-      box-shadow: 0 0 8px rgba(91, 192, 190, 0.6);
+      box-shadow:
+        inset 0 2px 4px rgba(255,255,255,0.2),
+        inset 0 -2px 4px rgba(0,0,0,0.4),
+        0 0 12px rgba(91, 192, 190, 0.7),
+        0 3px 6px rgba(0,0,0,0.8);
+      transform: scale(1.1);
     }
 
     .jack.active {
-      box-shadow: 0 0 12px rgba(255, 107, 53, 0.8);
+      box-shadow:
+        inset 0 2px 4px rgba(255,255,255,0.2),
+        inset 0 -2px 4px rgba(0,0,0,0.4),
+        0 0 15px rgba(255, 107, 53, 0.9),
+        0 3px 6px rgba(0,0,0,0.8);
     }
 
     .jack-label {
@@ -212,19 +250,20 @@
     }
 
     .cable {
-      stroke-width: 3;
+      stroke-width: 4;
       stroke-linecap: round;
       fill: none;
-      opacity: 0.85;
+      opacity: 0.9;
       transition: stroke-width 0.2s, opacity 0.2s;
       pointer-events: stroke;
       cursor: pointer;
+      filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5));
     }
 
     .cable:hover {
-      stroke-width: 5;
+      stroke-width: 6;
       opacity: 1;
-      filter: drop-shadow(0 0 4px rgba(255,255,255,0.6));
+      filter: drop-shadow(0 0 6px rgba(255,255,255,0.7));
     }
 
     .cable.dragging {
@@ -514,15 +553,15 @@
       <!-- MODULAR PATCH BAY -->
       <div class="patch-bay">
         <!-- Main IN jack -->
-        <div class="jack" id="jack-main-in" data-jack="main_in" data-type="output" style="left: 15px; top: 30px;">
+        <div class="jack" id="jack-main-in" data-jack="main-in" data-type="output" style="left: 15px; top: 30px;">
           <div class="jack-label">IN</div>
         </div>
 
         <!-- STUTTER MODULE -->
         <div class="module" style="left: 105px; top: 10px;">
           <div class="module-label">STUTTER</div>
-          <div class="jack" id="jack-stutter-in" data-jack="stutter_in" data-type="input" style="left: -6px; top: 24px;"></div>
-          <div class="jack" id="jack-stutter-out" data-jack="stutter_out" data-type="output" style="right: -6px; top: 24px;"></div>
+          <div class="jack" id="jack-stutter-in" data-jack="stutter-in" data-type="input" style="left: -9px; top: 21px;"></div>
+          <div class="jack" id="jack-stutter-out" data-jack="stutter-out" data-type="output" style="right: -9px; top: 21px;"></div>
           <div class="mini-knob" data-param="stutter_intensity" data-min="0" data-max="1" data-value="1">
             <div class="mini-knob-indicator"></div>
           </div>
@@ -531,8 +570,8 @@
         <!-- PITCH MODULE -->
         <div class="module" style="left: 215px; top: 10px;">
           <div class="module-label">PITCH</div>
-          <div class="jack" id="jack-pitch-in" data-jack="pitch_in" data-type="input" style="left: -6px; top: 24px;"></div>
-          <div class="jack" id="jack-pitch-out" data-jack="pitch_out" data-type="output" style="right: -6px; top: 24px;"></div>
+          <div class="jack" id="jack-pitch-in" data-jack="pitch-in" data-type="input" style="left: -9px; top: 21px;"></div>
+          <div class="jack" id="jack-pitch-out" data-jack="pitch-out" data-type="output" style="right: -9px; top: 21px;"></div>
           <div class="mini-knob" data-param="pitch_shift" data-min="-24" data-max="24" data-value="0">
             <div class="mini-knob-indicator"></div>
           </div>
@@ -541,8 +580,8 @@
         <!-- SPEED MODULE -->
         <div class="module" style="left: 325px; top: 10px;">
           <div class="module-label">SPEED</div>
-          <div class="jack" id="jack-speed-in" data-jack="speed_in" data-type="input" style="left: -6px; top: 24px;"></div>
-          <div class="jack" id="jack-speed-out" data-jack="speed_out" data-type="output" style="right: -6px; top: 24px;"></div>
+          <div class="jack" id="jack-speed-in" data-jack="speed-in" data-type="input" style="left: -9px; top: 21px;"></div>
+          <div class="jack" id="jack-speed-out" data-jack="speed-out" data-type="output" style="right: -9px; top: 21px;"></div>
           <div class="mini-knob" data-param="speed" data-min="50" data-max="200" data-value="100">
             <div class="mini-knob-indicator"></div>
           </div>
@@ -551,15 +590,15 @@
         <!-- REVERSE MODULE -->
         <div class="module" style="left: 435px; top: 10px;">
           <div class="module-label">REVERSE</div>
-          <div class="jack" id="jack-reverse-in" data-jack="reverse_in" data-type="input" style="left: -6px; top: 24px;"></div>
-          <div class="jack" id="jack-reverse-out" data-jack="reverse_out" data-type="output" style="right: -6px; top: 24px;"></div>
+          <div class="jack" id="jack-reverse-in" data-jack="reverse-in" data-type="input" style="left: -9px; top: 21px;"></div>
+          <div class="jack" id="jack-reverse-out" data-jack="reverse-out" data-type="output" style="right: -9px; top: 21px;"></div>
           <div class="mini-knob" data-param="reverse_mix" data-min="0" data-max="100" data-value="100">
             <div class="mini-knob-indicator"></div>
           </div>
         </div>
 
         <!-- Main OUT jack -->
-        <div class="jack" id="jack-main-out" data-jack="main_out" data-type="input" style="right: 15px; top: 30px;">
+        <div class="jack" id="jack-main-out" data-jack="main-out" data-type="input" style="right: 15px; top: 30px;">
           <div class="jack-label">OUT</div>
         </div>
       </div>
@@ -673,11 +712,11 @@
 
     // Default cable connections (from YAML)
     const defaultConnections = [
-      { from: 'main_in', to: 'stutter_in', color: '#5bc0be' },
-      { from: 'stutter_out', to: 'pitch_in', color: '#ff6b35' },
-      { from: 'pitch_out', to: 'speed_in', color: '#5bc0be' },
-      { from: 'speed_out', to: 'reverse_in', color: '#ff6b35' },
-      { from: 'reverse_out', to: 'main_out', color: '#d4a373' }
+      { from: 'main-in', to: 'stutter-in', color: '#5bc0be' },
+      { from: 'stutter-out', to: 'pitch-in', color: '#ff6b35' },
+      { from: 'pitch-out', to: 'speed-in', color: '#5bc0be' },
+      { from: 'speed-out', to: 'reverse-in', color: '#ff6b35' },
+      { from: 'reverse-out', to: 'main-out', color: '#d4a373' }
     ];
 
     function getJackPosition(jackId) {
@@ -925,6 +964,7 @@
 
     // Mini knob rotation logic
     function initMiniKnob(miniKnobElement) {
+      const indicator = miniKnobElement.querySelector('.mini-knob-indicator');
       const paramId = miniKnobElement.dataset.param;
       const min = parseFloat(miniKnobElement.dataset.min || 0);
       const max = parseFloat(miniKnobElement.dataset.max || 1);
@@ -935,7 +975,10 @@
         const normalized = (value - min) / (max - min);
         const degrees = -135 + (normalized * 270);
 
-        miniKnobElement.style.transform = `rotate(${degrees}deg)`;
+        // Keep the translateX for centering, add rotation
+        miniKnobElement.style.transform = `translateX(-50%) rotate(${degrees}deg)`;
+
+        updateDebugMonitor(paramId, value.toFixed(1), normalized);
         console.log(`${paramId}: ${value.toFixed(1)}`);
       }
 
@@ -955,12 +998,20 @@
         if (!isDragging) return;
         const deltaY = startY - e.clientY;
         const range = max - min;
-        const sensitivity = 0.01;
+        const sensitivity = 0.008;
         updateMiniKnob(startValue + (deltaY * range * sensitivity));
       });
 
       document.addEventListener('mouseup', () => {
         isDragging = false;
+      });
+
+      // Scroll wheel support
+      miniKnobElement.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -1 : 1;
+        const step = (max - min) / 50;
+        updateMiniKnob(value + (delta * step));
       });
 
       updateMiniKnob(value);
