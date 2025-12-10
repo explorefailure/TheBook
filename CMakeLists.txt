@@ -5,8 +5,19 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "Minimum macOS deployment v
 
 project(JUCEPlugins VERSION 1.0.0)
 
+# JUCE path - configurable via -DJUCE_PATH or defaults to local paths
+if(NOT DEFINED JUCE_PATH)
+    if(EXISTS "/Users/grot/JUCE")
+        set(JUCE_PATH "/Users/grot/JUCE")
+    elseif(EXISTS "${CMAKE_SOURCE_DIR}/JUCE")
+        set(JUCE_PATH "${CMAKE_SOURCE_DIR}/JUCE")
+    else()
+        message(FATAL_ERROR "JUCE not found. Set -DJUCE_PATH=/path/to/JUCE")
+    endif()
+endif()
+
 # Add JUCE once at root
-add_subdirectory(/Users/grot/JUCE JUCE)
+add_subdirectory(${JUCE_PATH} JUCE)
 
 # Auto-discover plugins
 file(GLOB PLUGIN_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/plugins/*")

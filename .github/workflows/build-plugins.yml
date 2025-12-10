@@ -1,0 +1,58 @@
+name: Build Plugins
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'plugins/**'
+      - '.github/workflows/build-plugins.yml'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest]
+        plugin: [Bitcrusher]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install JUCE dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev libjack-jackd2-dev \
+            ladspa-sdk libcurl4-openssl-dev libfreetype6-dev \
+            libx11-dev libxcomposite-dev libxcursor-dev libxext-dev \
+            libxinerama-dev libxrandr-dev libxrender-dev \
+            libwebkit2gtk-4.0-dev libglu1-mesa-dev mesa-common-dev
+
+      - name: Setup JUCE
+        run: |
+          git clone --depth 1 --branch 8.0.3 https://github.com/juce-framework/JUCE.git ${{ github.workspace }}/JUCE
+
+      - name: Configure CMake
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DJUCE_PATH=${{ github.workspace }}/JUCE
+
+      - name: Build ${{ matrix.plugin }}
+        run: |
+          cmake --build build --target ${{ matrix.plugin }}_VST3 --config Release -j4
+
+      - name: Upload VST3 artifact (Windows)
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.plugin }}-Windows-VST3
+          path: build/plugins/${{ matrix.plugin }}/${{ matrix.plugin }}_artefacts/Release/VST3/*.vst3
+
+      - name: Upload VST3 artifact (macOS)
+        if: runner.os == 'macOS'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.plugin }}-macOS-VST3
+          path: build/plugins/${{ matrix.plugin }}/${{ matrix.plugin }}_artefacts/Release/VST3/*.vst3
