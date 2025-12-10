@@ -1,12 +1,12 @@
 ---
 name: pfs
-description: Load Plugin Freedom System architecture context for meta-level analysis
+description: Load THE BOOK architecture context for meta-level analysis
 ---
 
-# Plugin Freedom System Context Loader
+# THE BOOK Context Loader
 
 <objective>
-Load the complete Plugin Freedom System architecture from `.claude/` directory to enable meta-level analysis, optimization, and system improvement discussions.
+Load the complete THE BOOK architecture from `.claude/` directory to enable meta-level analysis, optimization, and system improvement discussions.
 
 This is NOT about building plugins WITH the system - this is about analyzing and improving the system ITSELF.
 </objective>
@@ -17,7 +17,7 @@ After loading context, all subsequent user questions should be interpreted as:
 - Optimization opportunities within the system
 - Improvements to skills, agents, commands, or hooks
 - System-level refactoring or enhancement
-- Meta-analysis of the Plugin Freedom System implementation
+- Meta-analysis of the THE BOOK implementation
 
 NOT as questions about plugin development or using the system to build plugins.
 </context_framing>
@@ -40,7 +40,7 @@ Use Glob to discover all architectural files:
 After discovery, present a brief structural summary:
 
 ```
-✓ Plugin Freedom System inventory complete
+✓ THE BOOK inventory complete
 
 **System Architecture:**
 - Skills: [count] available
@@ -106,21 +106,21 @@ Once the user poses their question, determine if it involves Claude Code primiti
 - How Claude Code handles specific scenarios
 
 **Proceed directly if the question is:**
-- Pure PFS-specific logic (workflow stages, checkpoint protocol specifics)
-- PFS file structure or naming conventions
+- Pure THE BOOK-specific logic (workflow stages, checkpoint protocol specifics)
+- THE BOOK file structure or naming conventions
 - Plugin-specific implementation details
-- System state management unique to PFS
+- System state management unique to THE BOOK
 
-**WHY:** The Plugin Freedom System is built ON Claude Code primitives. Understanding the underlying framework helps identify optimization opportunities and ensures suggestions align with Claude Code best practices. Many optimization questions require knowing both what PFS does AND how Claude Code's primitives work.
+**WHY:** The THE BOOK is built ON Claude Code primitives. Understanding the underlying framework helps identify optimization opportunities and ensures suggestions align with Claude Code best practices. Many optimization questions require knowing both what THE BOOK does AND how Claude Code's primitives work.
 
 **Example flow:**
 ```
 User: "How can we optimize the checkpoint protocol?"
 → This involves hooks and best practices → Invoke claude-code-knowledge
-→ Then analyze with both Claude Code docs + loaded PFS context
+→ Then analyze with both Claude Code docs + loaded THE BOOK context
 
 User: "Should we rename the .continue-here.md file?"
-→ Pure PFS naming convention → Proceed directly with PFS context
+→ Pure THE BOOK naming convention → Proceed directly with THE BOOK context
 ```
 
 </claude_code_integration>

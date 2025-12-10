@@ -1,6 +1,6 @@
 # Deep Research Integrations
 
-Integration details for deep-research skill with other Plugin Freedom System components.
+Integration details for deep-research skill with other THE BOOK components.
 
 ## Contents
 

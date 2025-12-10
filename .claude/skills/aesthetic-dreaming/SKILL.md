@@ -252,7 +252,7 @@ See references/file-generation.md for complete Phase 5 implementation protocol.
 
 <phase id="6" name="decision_menu">
 <checkpoint_protocol>
-This is a system checkpoint. MUST follow Plugin Freedom System checkpoint protocol.
+This is a system checkpoint. MUST follow THE BOOK checkpoint protocol.
 MUST use inline numbered list format (NOT AskUserQuestion tool) per CLAUDE.md checkpoint protocol.
 </checkpoint_protocol>
 

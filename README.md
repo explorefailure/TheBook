@@ -1,4 +1,14 @@
-# Plugin Freedom System
+```
+████████╗██╗  ██╗███████╗    ██████╗  ██████╗  ██████╗ ██╗  ██╗
+╚══██╔══╝██║  ██║██╔════╝    ██╔══██╗██╔═══██╗██╔═══██╗██║ ██╔╝
+   ██║   ███████║█████╗      ██████╔╝██║   ██║██║   ██║█████╔╝
+   ██║   ██╔══██║██╔══╝      ██╔══██╗██║   ██║██║   ██║██╔═██╗
+   ██║   ██║  ██║███████╗    ██████╔╝╚██████╔╝╚██████╔╝██║  ██╗
+   ╚═╝   ╚═╝  ╚═╝╚══════╝    ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝
+        A CHOOSE YOUR OWN AU/VST PLUGIN ADVENTURE
+```
+
+# THE BOOK
 
 An AI-assisted JUCE plugin development system that enables conversational creation of professional VST3 and AU audio plugins for macOS. Design and build custom audio processors through natural dialogue with Claude Code—no programming experience required.
 
@@ -10,7 +20,7 @@ An AI-assisted JUCE plugin development system that enables conversational creati
 
 Traditional plugin development demands deep expertise in C++, DSP algorithms, and the JUCE framework. This barrier keeps plugin creation restricted to experienced programmers, leaving musicians, producers, and sound designers dependent on commercial tools.
 
-The Plugin Freedom System removes that barrier entirely.
+The THE BOOK removes that barrier entirely.
 
 By enabling conversational plugin development, this system:
 
@@ -284,7 +294,7 @@ All other dependencies (Xcode Command Line Tools, JUCE, CMake, Python, pluginval
 ## Project Structure
 
 ```
-plugin-freedom-system/
+thebook/
 ├── plugins/                          # Plugin source code
 │   └── [PluginName]/
 │       ├── .ideas/                   # Contracts (immutable during impl)

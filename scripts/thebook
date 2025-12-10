@@ -1,0 +1,208 @@
+#!/bin/bash
+# THE BOOK - CLI Launcher
+# Launches Claude Code in the thebook project context with title page
+#
+# Usage:
+#   thebook              - Launch with title page
+#   thebook --version    - Show version info
+#   thebook --help       - Show help
+
+VERSION="1.0.0"
+
+# Dynamically determine THE BOOK directory from script location
+# Script is at: [THEBOOK_DIR]/scripts/thebook
+SCRIPT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+# Follow symlink if this is a symlink
+if [ -L "$SCRIPT_PATH" ]; then
+    SCRIPT_PATH="$(readlink "$SCRIPT_PATH")"
+fi
+# Get the parent of the scripts directory
+THEBOOK_DIR="$(cd "$(dirname "$SCRIPT_PATH")/.." && pwd)"
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m'
+
+show_help() {
+    cat << EOF
+THE BOOK - A Choose Your Own AU/VST Plugin Adventure
+
+Usage:
+  thebook              Launch Claude Code with THE BOOK title page
+  thebook titlepage    Display the title page directly (no Claude)
+  thebook --version    Show version information
+  thebook --help       Show this help message
+
+This command launches Claude Code in the context of THE BOOK project
+and automatically displays the title page with available commands.
+
+THE BOOK directory: $THEBOOK_DIR
+For more information, see: $THEBOOK_DIR/README.md
+EOF
+}
+
+show_version() {
+    echo "thebook version $VERSION"
+    echo "THE BOOK directory: $THEBOOK_DIR"
+}
+
+show_titlepage() {
+    # ASCII Banner
+    cat << 'EOF'
+████████╗██╗  ██╗███████╗    ██████╗  ██████╗  ██████╗ ██╗  ██╗
+╚══██╔══╝██║  ██║██╔════╝    ██╔══██╗██╔═══██╗██╔═══██╗██║ ██╔╝
+   ██║   ███████║█████╗      ██████╔╝██║   ██║██║   ██║█████╔╝
+   ██║   ██╔══██║██╔══╝      ██╔══██╗██║   ██║██║   ██║██╔═██╗
+   ██║   ██║  ██║███████╗    ██████╔╝╚██████╔╝╚██████╔╝██║  ██╗
+   ╚═╝   ╚═╝  ╚═╝╚══════╝    ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝
+
+         - A CHOOSE YOUR OWN AU/VST PLUGIN ADVENTURE -
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PROJECTS
+
+EOF
+
+    # Parse PLUGINS.md and format project list
+    local plugins_file="$THEBOOK_DIR/PLUGINS.md"
+    if [ -f "$plugins_file" ]; then
+        # Extract table rows, skip header and archived items
+        local lines=()
+        while IFS= read -r line; do
+            # Skip archived plugins
+            if [[ "$line" == *"🗑️"* ]]; then
+                continue
+            fi
+            # Parse: | PluginName | Status | Version | Type | Date |
+            if [[ "$line" =~ ^\|[[:space:]]*([^|]+)[[:space:]]*\|[[:space:]]*([^|]+)[[:space:]]*\|[[:space:]]*([^|]+)[[:space:]]*\| ]]; then
+                name="${BASH_REMATCH[1]}"
+                status="${BASH_REMATCH[2]}"
+                version="${BASH_REMATCH[3]}"
+
+                # Trim whitespace
+                name=$(echo "$name" | xargs)
+                status=$(echo "$status" | xargs)
+                version=$(echo "$version" | xargs)
+
+                # Skip header row, separator, and template
+                [[ "$name" == "Plugin Name" ]] && continue
+                [[ "$name" == "-"* ]] && continue
+                [[ "$name" == *"PluginName"* ]] && continue
+
+                # Format version string
+                local ver_str=""
+                if [[ "$version" != "-" && -n "$version" ]]; then
+                    ver_str="v$version"
+                fi
+
+                lines+=("$name|$status|$ver_str")
+            fi
+        done < "$plugins_file"
+
+        # Display with tree structure
+        local count=${#lines[@]}
+        local i=0
+        for entry in "${lines[@]}"; do
+            i=$((i + 1))
+            IFS='|' read -r name status ver_str <<< "$entry"
+
+            # Tree character
+            local tree_char="├──"
+            if [ $i -eq $count ]; then
+                tree_char="└──"
+            fi
+
+            # Format output with consistent spacing
+            printf "%s %-16s %-18s %s\n" "$tree_char" "$name" "$status" "$ver_str"
+        done
+    else
+        echo "  (No PLUGINS.md found)"
+    fi
+
+    # Commands section
+    cat << 'EOF'
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+COMMANDS
+
+Create & Plan
+  /dream [Name]                  Brainstorm new plugin
+  /plan [Name]                   Research & architecture
+
+Build
+  /implement [Name]              Build stages 1-3
+  /continue [Name]               Resume from checkpoint
+
+Test & Validate
+  /test [Name]                   Run validation
+  /research [topic]              Deep investigation
+
+Deploy
+  /install-plugin [Name]         Install to system
+  /package [Name]                Create PKG installer
+
+Modify
+  /improve [Name] [desc]         Versioned changes
+  /doc-fix [context]             Document solved problem
+  /add-critical-pattern [name]   Add to Required Reading
+
+Cleanup
+  /uninstall [Name]              Remove binaries
+  /reset-to-ideation [Name]      Keep ideas, remove code
+  /destroy [Name]                Complete removal
+  /clean [Name]                  Interactive menu
+  /clear-cache [Name]            Clear validation cache
+
+System
+  /setup                         Validate dependencies
+  /reconcile [Name]              Repair state files
+  /thebook                       Reference guide
+  /pfs                           Load system context
+  /show-standalone [Name]        Open plugin UI
+  /titlepage                     This screen
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EOF
+}
+
+# Parse arguments
+case "${1:-}" in
+    --help|-h)
+        show_help
+        exit 0
+        ;;
+    --version|-v)
+        show_version
+        exit 0
+        ;;
+    titlepage)
+        show_titlepage
+        exit 0
+        ;;
+esac
+
+# Check if Claude Code is installed
+if ! command -v claude &> /dev/null; then
+    echo -e "${RED}Error: Claude Code is not installed.${NC}"
+    echo ""
+    echo "To install Claude Code:"
+    echo "  npm install -g @anthropic-ai/claude-code"
+    echo ""
+    echo "Or visit: https://claude.ai/download"
+    exit 1
+fi
+
+# Check if thebook directory exists
+if [ ! -d "$THEBOOK_DIR" ]; then
+    echo -e "${RED}Error: THE BOOK directory not found at $THEBOOK_DIR${NC}"
+    echo ""
+    echo "Please ensure THE BOOK is installed correctly."
+    exit 1
+fi
+
+# Launch Claude Code in thebook context with title page
+cd "$THEBOOK_DIR"
+claude "/titlepage"

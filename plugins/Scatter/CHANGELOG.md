@@ -91,5 +91,5 @@
 
 ---
 
-**Built with:** Plugin Freedom System
+**Built with:** THE BOOK
 **Generated with:** [Claude Code](https://claude.com/claude-code)

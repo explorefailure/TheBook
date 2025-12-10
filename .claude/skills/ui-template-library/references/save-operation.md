@@ -153,7 +153,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ```
 
 **Why this step matters:**
-- Follows Plugin Freedom System checkpoint protocol (all state changes committed)
+- Follows THE BOOK checkpoint protocol (all state changes committed)
 - Prevents untracked files accumulating in `.claude/aesthetics/`
 - Maintains clean git history with conventional commit format
 - Ensures aesthetic is versioned and recoverable

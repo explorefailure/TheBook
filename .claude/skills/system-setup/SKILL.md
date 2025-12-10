@@ -1,6 +1,6 @@
 ---
 name: system-setup
-description: Validates and configures all dependencies required for the Plugin Freedom System. This is a STANDALONE skill that runs BEFORE plugin workflows begin. It checks for Python, build tools, CMake, JUCE, and pluginval, optionally installing missing dependencies with user approval. Configuration is saved to .claude/system-config.json for use by other skills. Use when user mentions setup, installation, dependencies, missing tools, or when SessionStart hook detects configuration issues.
+description: Validates and configures all dependencies required for the THE BOOK. This is a STANDALONE skill that runs BEFORE plugin workflows begin. It checks for Python, build tools, CMake, JUCE, pluginval, and the thebook CLI command, optionally installing missing dependencies with user approval. Configuration is saved to .claude/system-config.json for use by other skills. Use when user mentions setup, installation, dependencies, missing tools, or when SessionStart hook detects configuration issues.
 allowed-tools:
   - Bash # For dependency checks and installation
   - Read # For checking existing config
@@ -12,7 +12,7 @@ preconditions:
 
 # system-setup Skill
 
-**Purpose:** Validate and configure all dependencies required for JUCE plugin development in the Plugin Freedom System.
+**Purpose:** Validate and configure all dependencies required for JUCE plugin development in the THE BOOK.
 
 ## Overview
 
@@ -63,7 +63,7 @@ No dependencies on PLUGINS.md or .continue-here.md
 
 For detailed dependency requirements and installation instructions, see [references/platform-requirements.md](references/platform-requirements.md).
 
-**Summary**: Python 3.8+, Build Tools (Xcode Command Line Tools/GCC/MSVC), CMake 3.15+, JUCE 8.0.0+, pluginval (optional)
+**Summary**: Python 3.8+, Build Tools (Xcode Command Line Tools/GCC/MSVC), CMake 3.15+, JUCE 8.0.0+, pluginval (optional), thebook CLI
 
 ---
 
@@ -76,7 +76,7 @@ When invoked via `/setup` command:
 1. Check if `.claude/system-config.json` exists and is recent (validated within last 30 days)
 2. If valid config exists, offer quick menu:
    ```
-   System Setup - Plugin Freedom System
+   System Setup - THE BOOK
 
    Existing configuration found (validated 5 days ago)
 
@@ -110,7 +110,7 @@ When invoked via `/setup` command:
 
 1. **Welcome message:**
    ```
-   System Setup - Plugin Freedom System
+   System Setup - THE BOOK
 
    This will validate and configure all dependencies needed for JUCE plugin development.
 
@@ -156,6 +156,7 @@ Setup Progress:
 - [ ] CMake 3.15+ installed and verified
 - [ ] JUCE 8.0.0+ installed and verified
 - [ ] pluginval installed and verified (optional)
+- [ ] thebook CLI command configured
 - [ ] Configuration saved to .claude/system-config.json
 - [ ] Setup complete
 ```
@@ -283,6 +284,7 @@ For detailed validation workflow, error handling, and dependency-specific variat
 4. **CMake 3.15+** - Build system for JUCE projects
 5. **JUCE 8.0.0+** - Audio plugin framework
 6. **pluginval** - Plugin validation tool (optional)
+7. **thebook CLI** - Terminal launcher command (creates ~/bin, symlink, PATH)
 
 For each dependency:
 - Run detection via `system-check.sh`
@@ -295,6 +297,86 @@ See [validation-workflow.md](references/validation-workflow.md) for complete alg
 
 ---
 
+## Step 7: thebook CLI Command
+
+**Purpose:** Configure the `thebook` terminal command so users can launch THE BOOK from anywhere.
+
+**Check command:**
+```bash
+bash .claude/skills/system-setup/assets/system-check.sh --check-thebook ${TEST_MODE:+--test=$TEST_MODE}
+```
+
+**Returns JSON:**
+```json
+{
+  "ready": true,
+  "claude_installed": true,
+  "claude_path": "/path/to/claude",
+  "bin_exists": true,
+  "bin_in_path": true,
+  "symlink_exists": true,
+  "symlink_works": true,
+  "script_exists": true,
+  "symlink_path": "~/bin/thebook",
+  "script_path": "[THEBOOK_DIR]/scripts/thebook"
+}
+```
+
+**Validation logic:**
+
+1. **Check Claude Code installed:**
+   - If `claude_installed: false`:
+     ```
+     Claude Code is not installed.
+
+     The thebook command requires Claude Code to function.
+
+     To install:
+       npm install -g @anthropic-ai/claude-code
+
+     Or visit: https://claude.ai/download
+
+     1. Skip for now (can configure later with /setup)
+     2. Exit setup
+     ```
+
+2. **If Claude Code is installed, check remaining components:**
+   - If any of `bin_exists`, `bin_in_path`, `symlink_works` are false:
+     - **Automated mode:** Run setup automatically
+       ```bash
+       bash .claude/skills/system-setup/assets/system-check.sh --setup-thebook
+       ```
+     - **Guided mode:** Show what will be configured:
+       ```
+       The thebook CLI command needs to be configured:
+
+       This will:
+       - Create ~/bin directory (if needed)
+       - Add ~/bin to PATH in ~/.zshrc and ~/.bashrc
+       - Create symlink: ~/bin/thebook → scripts/thebook
+
+       After setup, you can run 'thebook' from any terminal to launch THE BOOK.
+
+       1. Configure now
+       2. Skip for now
+       ```
+     - **Check-only mode:** Report status without changes
+
+3. **Verify after setup:**
+   - Run `--check-thebook` again
+   - If `ready: true`, show success:
+     ```
+     ✓ thebook CLI configured
+       Symlink: ~/bin/thebook
+
+     Note: Open a new terminal window for PATH changes to take effect.
+     ```
+
+4. **Test the command (automated mode only):**
+   ```bash
+   ~/bin/thebook --version
+   ```
+   - Should output: `thebook version 1.0.0`
 
 ---
 
@@ -318,6 +400,7 @@ cat > .claude/system-config.json <<EOF
   "juce_version": "8.0.3",
   "pluginval_path": "/usr/local/bin/pluginval",
   "pluginval_version": "1.0.3",
+  "thebook_command": "~/bin/thebook",
   "validated_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 }
 EOF
@@ -347,6 +430,7 @@ Dependencies validated:
 ✓ CMake 3.27.4 (/usr/local/bin/cmake)
 ✓ JUCE 8.0.3 (/Users/lex/JUCE)
 ✓ pluginval 1.0.3 (/usr/local/bin/pluginval)
+✓ thebook CLI (~/bin/thebook)
 
 Configuration saved to:
 .claude/system-config.json

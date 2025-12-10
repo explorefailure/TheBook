@@ -2,7 +2,16 @@
 # SessionStart hook - Validate development environment with proactive dependency checks
 # Runs once at session start, provides warnings and actionable fixes
 
-echo "━━━ Plugin Freedom System - Environment Validation ━━━"
+echo ""
+echo "████████╗██╗  ██╗███████╗    ██████╗  ██████╗  ██████╗ ██╗  ██╗"
+echo "╚══██╔══╝██║  ██║██╔════╝    ██╔══██╗██╔═══██╗██╔═══██╗██║ ██╔╝"
+echo "   ██║   ███████║█████╗      ██████╔╝██║   ██║██║   ██║█████╔╝"
+echo "   ██║   ██╔══██║██╔══╝      ██╔══██╗██║   ██║██║   ██║██╔═██╗"
+echo "   ██║   ██║  ██║███████╗    ██████╔╝╚██████╔╝╚██████╔╝██║  ██╗"
+echo "   ╚═╝   ╚═╝  ╚═╝╚══════╝    ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝"
+echo "        A CHOOSE YOUR OWN AU/VST PLUGIN ADVENTURE"
+echo ""
+echo "━━━ THE BOOK - Environment Validation ━━━"
 echo ""
 
 # Clean expired cache entries

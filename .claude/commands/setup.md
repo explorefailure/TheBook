@@ -1,6 +1,6 @@
 ---
 name: setup
-description: Validate and configure system dependencies for the Plugin Freedom System
+description: Validate and configure system dependencies for the THE BOOK
 ---
 
 # /setup

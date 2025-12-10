@@ -14,7 +14,7 @@ JUCE (Jules' Utility Class Extensions) is a cross-platform C++ framework for bui
 - File I/O, networking, threading
 - Build system integration (CMake, Projucer)
 
-**Version requirement:** Plugin Freedom System requires JUCE 8.0.0 or later.
+**Version requirement:** THE BOOK requires JUCE 8.0.0 or later.
 
 ---
 
@@ -221,7 +221,7 @@ If any of these are missing, the installation is incomplete.
 
 ## CMake Integration
 
-JUCE 8.x uses CMake as its primary build system. The Plugin Freedom System relies on this integration.
+JUCE 8.x uses CMake as its primary build system. The THE BOOK relies on this integration.
 
 **Verify CMake can find JUCE:**
 
@@ -333,7 +333,7 @@ ln -sf ~/JUCE-8.0.2 ~/JUCE
 
 ## Projucer (Optional)
 
-Projucer is JUCE's IDE for creating and managing projects. The Plugin Freedom System doesn't require it (we use CMake directly), but it's useful for:
+Projucer is JUCE's IDE for creating and managing projects. The THE BOOK doesn't require it (we use CMake directly), but it's useful for:
 
 - Browsing JUCE examples
 - Experimenting with JUCE features

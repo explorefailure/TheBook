@@ -1,6 +1,6 @@
 # Platform Requirements
 
-Platform-specific requirements and installation guides for the Plugin Freedom System.
+Platform-specific requirements and installation guides for the THE BOOK.
 
 ---
 

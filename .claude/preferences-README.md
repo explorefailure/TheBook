@@ -1,6 +1,6 @@
 # Workflow Preferences
 
-This file controls how the Plugin Freedom System handles checkpoint decision gates during plugin implementation.
+This file controls how the THE BOOK handles checkpoint decision gates during plugin implementation.
 
 ## Configuration: `.claude/preferences.json`
 

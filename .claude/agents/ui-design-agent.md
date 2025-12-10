@@ -1,7 +1,7 @@
 ---
 name: ui-design-agent
-description: Create WebView UI mockup YAML and test HTML for audio plugins. Use when user requests UI design, mockup creation, or design iteration. Invoked by ui-mockup orchestrator skill.
-tools: Read, Write, Bash
+description: Create WebView UI for audio plugins. Three modes - full (AI designs complete mockup), wireframe (placeholder layout for external asset design), integrate (combine user's PNG assets into functional UI). Default mode is wireframe. Invoked by ui-mockup orchestrator skill.
+tools: Read, Write, Bash, Glob
 model: sonnet
 ---
 
@@ -106,17 +106,33 @@ If contracts are malformed or missing critical information:
 
 You will receive the following inputs from the orchestrator via invocation prompt:
 
-1. **Plugin name** - Name of the plugin being designed
-2. **Version number** - Mockup version (v1, v2, v3, etc.)
-3. **Design requirements** - Layout, controls, styling preferences collected by orchestrator
-4. **creative-brief.md** (optional) - Plugin context if available
+1. **Mode** - `wireframe` (default) | `full` | `integrate`
+2. **Plugin name** - Name of the plugin being designed
+3. **Version number** - Mockup version (v1, v2, v3, etc.)
+4. **Design requirements** - Layout, controls, styling preferences (for full mode)
+5. **creative-brief.md** (optional) - Plugin context if available
+6. **Asset path** (integrate mode only) - Location of user's PNG files
 
 **Plugin location:** `plugins/[PluginName]/`
 
 **Output location:** `plugins/[PluginName]/.ideas/mockups/`
 
-**Invocation prompt format:**
+**Invocation prompt formats by mode:**
+
 ```
+# WIREFRAME MODE (default)
+Mode: wireframe
+Plugin: [PluginName]
+Version: [N]
+Source: yaml | brief | manual
+  - If yaml: Read positions from existing v[N]-ui.yaml
+  - If brief: Derive layout from creative-brief.md parameters
+  - If manual: Positions provided in prompt
+```
+
+```
+# FULL MODE (AI-designed mockup)
+Mode: full
 Plugin: [PluginName]
 Version: [N]
 Design requirements:
@@ -127,14 +143,29 @@ Design requirements:
   - Colors: [color palette or theme]
   - Window size: [width x height]
 ```
+
+```
+# INTEGRATE MODE (user assets → functional UI)
+Mode: integrate
+Plugin: [PluginName]
+Version: [N]
+Asset path: plugins/[PluginName]/.ideas/assets/
+Wireframe version: [N] (which wireframe layout to use)
+```
 </inputs>
 
 <task>
 ## Task
 
-Generate two design files from requirements:
-1. v[N]-ui.yaml - Machine-readable design specification
-2. v[N]-ui-test.html - Browser-testable mockup with mock parameter state
+**Mode determines output:**
+
+| Mode | Outputs | Description |
+|------|---------|-------------|
+| `wireframe` | wireframe-v[N].html + asset-checklist.md | Placeholder layout for external design |
+| `full` | v[N]-ui.yaml + v[N]-ui-test.html | AI-designed complete mockup |
+| `integrate` | [PluginName]-ui.html | Functional UI with user's assets |
+
+**Default mode is `wireframe`** - user designs assets externally, we handle layout and integration.
 
 Files must pass WebView constraint validation before returning.
 </task>
@@ -800,6 +831,488 @@ After all steps complete, return JSON report to orchestrator.
 
 **See JSON Report Format section below for schema.**
 </workflow>
+
+<wireframe_workflow>
+## Wireframe Mode Workflow
+
+**Purpose:** Generate simple placeholder layout so user can design assets externally with exact dimensions.
+
+### 1. Determine Layout Source
+
+```bash
+# Check source parameter
+case $SOURCE in
+    yaml)
+        # Read from existing YAML mockup
+        YAML_FILE="plugins/${PLUGIN_NAME}/.ideas/mockups/v${SOURCE_VERSION}-ui.yaml"
+        if [ ! -f "$YAML_FILE" ]; then
+            echo "❌ Source YAML not found: $YAML_FILE"
+            exit 1
+        fi
+        ;;
+    brief)
+        # Derive from creative brief
+        BRIEF_FILE="plugins/${PLUGIN_NAME}/.ideas/creative-brief.md"
+        if [ ! -f "$BRIEF_FILE" ]; then
+            echo "❌ Creative brief not found"
+            exit 1
+        fi
+        ;;
+    manual)
+        # Positions provided in prompt
+        ;;
+esac
+```
+
+### 2. Extract Element Specifications
+
+**From YAML source:**
+- Parse `window.width`, `window.height`
+- For each control: `id`, `position.x`, `position.y`, `size.width/height/diameter`
+- For special elements: same extraction
+
+**From brief source:**
+- Count parameters from Parameters table
+- Calculate reasonable positions based on parameter count
+- Use default sizes: knobs 80px, sliders 150×30, toggles 50×30
+
+### 3. Generate Wireframe HTML
+
+**Create:** `plugins/[PluginName]/.ideas/mockups/wireframe-v[N].html`
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>[PluginName] Wireframe v[N]</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #1a1a1a;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+    }
+
+    .window {
+      position: relative;
+      background: #2d2d2d;
+      border: 2px solid #444;
+    }
+
+    .window-label {
+      position: absolute;
+      top: -25px;
+      left: 0;
+      color: #888;
+      font-size: 12px;
+    }
+
+    .element {
+      position: absolute;
+      border: 2px dashed #666;
+      background: rgba(100, 100, 100, 0.3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #ccc;
+      font-size: 10px;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .element:hover {
+      border-color: #0af;
+      background: rgba(0, 170, 255, 0.1);
+    }
+
+    .element-id {
+      font-weight: bold;
+      color: #fff;
+      font-size: 11px;
+      margin-bottom: 2px;
+    }
+
+    .element-size {
+      color: #0af;
+      font-size: 10px;
+    }
+
+    .element-pos {
+      color: #888;
+      font-size: 9px;
+    }
+
+    /* Element type indicators */
+    .element[data-type="knob"] { border-radius: 50%; }
+    .element[data-type="background"] {
+      border-style: solid;
+      background: rgba(60, 60, 60, 0.5);
+      z-index: -1;
+    }
+  </style>
+</head>
+<body>
+  <div class="window" style="width: [WIDTH]px; height: [HEIGHT]px;">
+    <div class="window-label">[PluginName] — [WIDTH] × [HEIGHT]</div>
+
+    <!-- Background element (if applicable) -->
+    <div class="element" data-type="background"
+         style="left: 0; top: 0; width: [WIDTH]px; height: [HEIGHT]px;">
+      <span class="element-id">background</span>
+      <span class="element-size">[WIDTH] × [HEIGHT]</span>
+      <span class="element-pos">PNG required</span>
+    </div>
+
+    <!-- Controls generated from YAML/brief -->
+    <div class="element" data-type="knob"
+         style="left: [X]px; top: [Y]px; width: [W]px; height: [H]px;">
+      <span class="element-id">[element_id]</span>
+      <span class="element-size">[W] × [H]</span>
+      <span class="element-pos">([X], [Y])</span>
+    </div>
+
+    <!-- Repeat for each element -->
+  </div>
+</body>
+</html>
+```
+
+**Element generation rules:**
+- Each control from YAML/brief gets a placeholder box
+- Knobs get `border-radius: 50%` to show circular shape
+- Background is always included as full-window element
+- Hover effect highlights element for easy identification
+
+### 4. Generate Asset Checklist
+
+**Create:** `plugins/[PluginName]/.ideas/mockups/asset-checklist.md`
+
+```markdown
+# [PluginName] Asset Checklist
+
+Generated from wireframe v[N] on [DATE]
+
+## Required Assets
+
+All assets must be:
+- **Format:** PNG with transparent background
+- **Resolution:** Exact pixel dimensions listed below
+
+### Background
+
+| Element | Size | Filename | Notes |
+|---------|------|----------|-------|
+| background | [W]×[H] | `background.png` | Full plugin background |
+
+### Knobs
+
+| Element | Size | Filename | Notes |
+|---------|------|----------|-------|
+| [id] | [W]×[H] | `[id].png` | Pointer at 12 o'clock |
+
+### Other Controls
+
+| Element | Size | Filename | Notes |
+|---------|------|----------|-------|
+| [id] | [W]×[H] | `[id].png` | [type-specific notes] |
+
+## Optional State Assets
+
+For interactive feedback (not required):
+
+| Element | State | Filename |
+|---------|-------|----------|
+| [id] | hover | `[id]_hover.png` |
+| [id] | active | `[id]_active.png` |
+
+## Asset Folder
+
+Place completed assets in:
+```
+plugins/[PluginName]/.ideas/assets/
+```
+
+## Knob Design Notes
+
+- Design pointer at **12 o'clock** (straight up)
+- CSS rotation handles all other positions
+- Rotation range: -135° to +135° (270° total sweep)
+- Include any shadows/glows you want baked in
+
+## Next Step
+
+After placing assets, run integrate mode:
+```
+Mode: integrate
+Plugin: [PluginName]
+Asset path: plugins/[PluginName]/.ideas/assets/
+```
+```
+
+### 5. Open Wireframe in Browser
+
+```bash
+open "plugins/${PLUGIN_NAME}/.ideas/mockups/wireframe-v${VERSION}.html"
+```
+
+### 6. Return JSON Report
+
+```json
+{
+  "agent": "ui-design-agent",
+  "mode": "wireframe",
+  "status": "success",
+  "outputs": {
+    "plugin_name": "[PluginName]",
+    "version": 1,
+    "files_created": ["wireframe-v1.html", "asset-checklist.md"],
+    "window_dimensions": "650x350",
+    "element_count": 12,
+    "elements": [
+      {"id": "background", "size": "650x350", "type": "background"},
+      {"id": "stutter_rate", "size": "120x120", "type": "knob"},
+      {"id": "threshold", "size": "70x70", "type": "knob"}
+    ]
+  },
+  "issues": [],
+  "ready_for_next_stage": false,
+  "next_step": "User designs assets, then run integrate mode",
+  "stateUpdated": true
+}
+```
+</wireframe_workflow>
+
+<integrate_workflow>
+## Integrate Mode Workflow
+
+**Purpose:** Combine user's PNG assets with layout to create functional WebView UI.
+
+### 1. Validate Assets Exist
+
+```bash
+ASSET_PATH="plugins/${PLUGIN_NAME}/.ideas/assets"
+CHECKLIST="plugins/${PLUGIN_NAME}/.ideas/mockups/asset-checklist.md"
+
+# Check asset folder exists
+if [ ! -d "$ASSET_PATH" ]; then
+    echo "❌ Asset folder not found: $ASSET_PATH"
+    exit 1
+fi
+
+# Parse checklist for required files
+MISSING=()
+while IFS='|' read -r element size filename notes; do
+    filename=$(echo "$filename" | xargs | tr -d '`')
+    if [ -n "$filename" ] && [ "$filename" != "Filename" ]; then
+        if [ ! -f "$ASSET_PATH/$filename" ]; then
+            MISSING+=("$filename")
+        fi
+    fi
+done < <(grep "\.png" "$CHECKLIST")
+
+if [ ${#MISSING[@]} -gt 0 ]; then
+    echo "❌ Missing assets:"
+    printf '  - %s\n' "${MISSING[@]}"
+    exit 1
+fi
+```
+
+### 2. Read Layout from Wireframe/YAML
+
+```bash
+# Get positions from wireframe or YAML
+WIREFRAME="plugins/${PLUGIN_NAME}/.ideas/mockups/wireframe-v${WIREFRAME_VERSION}.html"
+YAML="plugins/${PLUGIN_NAME}/.ideas/mockups/v${WIREFRAME_VERSION}-ui.yaml"
+
+if [ -f "$YAML" ]; then
+    # Parse YAML for positions
+    WINDOW_WIDTH=$(yq eval '.window.width' "$YAML")
+    WINDOW_HEIGHT=$(yq eval '.window.height' "$YAML")
+    # ... extract control positions
+elif [ -f "$WIREFRAME" ]; then
+    # Parse wireframe HTML for positions
+    # ... extract from style attributes
+fi
+```
+
+### 3. Generate Functional UI HTML
+
+**Create:** `plugins/[PluginName]/.ideas/mockups/[PluginName]-ui.html`
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>[PluginName]</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      user-select: none;
+      -webkit-user-select: none;
+      cursor: default;
+      overflow: hidden;
+    }
+
+    .plugin-window {
+      position: relative;
+      width: [WIDTH]px;
+      height: [HEIGHT]px;
+      background-image: url('assets/background.png');
+      background-size: cover;
+    }
+
+    .knob {
+      position: absolute;
+      cursor: pointer;
+    }
+
+    .knob img {
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="plugin-window">
+
+    <!-- Knobs with rotation -->
+    <div class="knob" id="stutter_rate"
+         style="left: [X]px; top: [Y]px; width: [W]px; height: [H]px;"
+         data-min="0" data-max="6" data-value="3" data-type="choice">
+      <img src="assets/stutter_rate.png" alt="Stutter Rate">
+    </div>
+
+    <!-- Repeat for each control -->
+
+  </div>
+
+  <script>
+    // Disable context menu
+    document.addEventListener('contextmenu', e => e.preventDefault());
+
+    // Knob rotation calculation
+    function valueToRotation(value, min, max) {
+      const normalized = (value - min) / (max - min);
+      return -135 + (normalized * 270);
+    }
+
+    // Apply rotation to knob
+    function updateKnob(knob, value) {
+      const min = parseFloat(knob.dataset.min);
+      const max = parseFloat(knob.dataset.max);
+      const rotation = valueToRotation(value, min, max);
+      knob.querySelector('img').style.transform = `rotate(${rotation}deg)`;
+    }
+
+    // Drag interaction
+    document.querySelectorAll('.knob').forEach(knob => {
+      let isDragging = false;
+      let startY, startValue;
+
+      knob.addEventListener('mousedown', e => {
+        isDragging = true;
+        startY = e.clientY;
+        startValue = parseFloat(knob.dataset.value);
+        document.body.style.cursor = 'ns-resize';
+      });
+
+      document.addEventListener('mousemove', e => {
+        if (!isDragging) return;
+
+        const min = parseFloat(knob.dataset.min);
+        const max = parseFloat(knob.dataset.max);
+        const sensitivity = (max - min) / 200;
+        const delta = startY - e.clientY;
+        const newValue = Math.max(min, Math.min(max, startValue + delta * sensitivity));
+
+        knob.dataset.value = newValue;
+        updateKnob(knob, newValue);
+
+        // Send to JUCE
+        if (window.Juce) {
+          // Parameter binding
+        }
+      });
+
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+        document.body.style.cursor = 'default';
+      });
+
+      // Initialize rotation
+      updateKnob(knob, parseFloat(knob.dataset.value));
+    });
+
+    // Mock JUCE backend for testing
+    window.Juce = window.Juce || {
+      getSliderState: id => ({
+        normalisedValue: 0.5,
+        valueChangedEvent: { addListener: fn => {} }
+      })
+    };
+  </script>
+</body>
+</html>
+```
+
+### 4. Validate WebView Constraints
+
+Same validation as full mode:
+- No viewport units
+- html/body height: 100%
+- user-select: none
+- Context menu disabled
+
+### 5. Copy Assets to Mockups Folder
+
+```bash
+# Copy assets alongside the HTML for self-contained testing
+cp -r "$ASSET_PATH" "plugins/${PLUGIN_NAME}/.ideas/mockups/assets"
+```
+
+### 6. Open in Browser
+
+```bash
+open "plugins/${PLUGIN_NAME}/.ideas/mockups/${PLUGIN_NAME}-ui.html"
+```
+
+### 7. Return JSON Report
+
+```json
+{
+  "agent": "ui-design-agent",
+  "mode": "integrate",
+  "status": "success",
+  "outputs": {
+    "plugin_name": "[PluginName]",
+    "version": 1,
+    "files_created": ["[PluginName]-ui.html"],
+    "assets_integrated": 12,
+    "window_dimensions": "650x350",
+    "controls": [
+      {"id": "stutter_rate", "type": "knob", "asset": "stutter_rate.png"},
+      {"id": "threshold", "type": "knob", "asset": "threshold.png"}
+    ]
+  },
+  "issues": [],
+  "ready_for_next_stage": true,
+  "stateUpdated": true
+}
+```
+</integrate_workflow>
 
 <state_management>
 ## State Management

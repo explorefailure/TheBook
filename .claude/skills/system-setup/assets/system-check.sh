@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# system-check.sh - Automated dependency validation for Plugin Freedom System
+# system-check.sh - Automated dependency validation for THE BOOK
 # Returns JSON output for each check
 #
 # Usage:
@@ -243,6 +243,121 @@ validate_juce_path() {
     fi
 }
 
+# Check thebook CLI command
+check_thebook() {
+    # Derive thebook directory from this script's location
+    # This script is at: [THEBOOK_DIR]/.claude/skills/system-setup/assets/system-check.sh
+    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local thebook_dir="$(cd "$script_dir/../../../.." && pwd)"
+    local thebook_script="$thebook_dir/scripts/thebook"
+    local symlink_path="$HOME/bin/thebook"
+
+    # Check if Claude Code is installed
+    local claude_installed=false
+    local claude_path=""
+    if command -v claude &> /dev/null; then
+        claude_installed=true
+        claude_path=$(which claude)
+    fi
+
+    # Check if ~/bin exists
+    local bin_exists=false
+    if [ -d "$HOME/bin" ]; then
+        bin_exists=true
+    fi
+
+    # Check if ~/bin is in PATH
+    local bin_in_path=false
+    if [[ ":$PATH:" == *":$HOME/bin:"* ]]; then
+        bin_in_path=true
+    fi
+
+    # Check if thebook symlink exists and works
+    local symlink_exists=false
+    local symlink_works=false
+    if [ -L "$symlink_path" ] || [ -f "$symlink_path" ]; then
+        symlink_exists=true
+        if [ -x "$symlink_path" ]; then
+            symlink_works=true
+        fi
+    fi
+
+    # Check if source script exists
+    local script_exists=false
+    if [ -f "$thebook_script" ] && [ -x "$thebook_script" ]; then
+        script_exists=true
+    fi
+
+    # Determine overall status
+    local ready=false
+    if $claude_installed && $bin_exists && $bin_in_path && $symlink_works && $script_exists; then
+        ready=true
+    fi
+
+    json_output "{\"ready\":$ready,\"claude_installed\":$claude_installed,\"claude_path\":\"$claude_path\",\"bin_exists\":$bin_exists,\"bin_in_path\":$bin_in_path,\"symlink_exists\":$symlink_exists,\"symlink_works\":$symlink_works,\"script_exists\":$script_exists,\"symlink_path\":\"$symlink_path\",\"script_path\":\"$thebook_script\"}"
+}
+
+# Setup thebook CLI command
+setup_thebook() {
+    # Derive thebook directory from this script's location
+    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local thebook_dir="$(cd "$script_dir/../../../.." && pwd)"
+    local thebook_script="$thebook_dir/scripts/thebook"
+    local symlink_path="$HOME/bin/thebook"
+    local changes_made=false
+    local errors=""
+
+    # Create ~/bin if needed
+    if [ ! -d "$HOME/bin" ]; then
+        mkdir -p "$HOME/bin"
+        if [ $? -eq 0 ]; then
+            changes_made=true
+        else
+            errors+="Failed to create ~/bin. "
+        fi
+    fi
+
+    # Add ~/bin to PATH in shell configs
+    for rcfile in "$HOME/.zshrc" "$HOME/.bashrc"; do
+        if [ -f "$rcfile" ]; then
+            if ! grep -q 'export PATH="$HOME/bin:$PATH"' "$rcfile"; then
+                echo '' >> "$rcfile"
+                echo '# Added by THE BOOK setup' >> "$rcfile"
+                echo 'export PATH="$HOME/bin:$PATH"' >> "$rcfile"
+                changes_made=true
+            fi
+        else
+            # Create the file if it doesn't exist
+            echo '# Added by THE BOOK setup' > "$rcfile"
+            echo 'export PATH="$HOME/bin:$PATH"' >> "$rcfile"
+            changes_made=true
+        fi
+    done
+
+    # Create symlink
+    if [ -L "$symlink_path" ]; then
+        rm "$symlink_path"
+    fi
+    ln -s "$thebook_script" "$symlink_path"
+    if [ $? -eq 0 ]; then
+        changes_made=true
+    else
+        errors+="Failed to create symlink. "
+    fi
+
+    # Verify
+    local success=false
+    if [ -L "$symlink_path" ] && [ -x "$symlink_path" ]; then
+        success=true
+    fi
+
+    if [ -z "$errors" ]; then
+        json_output "{\"success\":$success,\"changes_made\":$changes_made,\"symlink_path\":\"$symlink_path\"}"
+    else
+        json_output "{\"success\":$success,\"changes_made\":$changes_made,\"symlink_path\":\"$symlink_path\",\"errors\":\"$errors\"}"
+    fi
+}
+
 # Check pluginval
 check_pluginval() {
     # First check if in PATH
@@ -280,7 +395,8 @@ check_all() {
     echo "  \"build_tools\": $(check_xcode),"
     echo "  \"cmake\": $(check_cmake),"
     echo "  \"juce\": $(check_juce),"
-    echo "  \"pluginval\": $(check_pluginval)"
+    echo "  \"pluginval\": $(check_pluginval),"
+    echo "  \"thebook\": $(check_thebook)"
     echo "}"
 }
 
@@ -532,6 +648,12 @@ if [[ -n "$TEST_ARG" ]]; then
         --check-pluginval)
             echo '{"found":true,"version":"1.0.3","path":"/usr/local/bin/pluginval"}'
             ;;
+        --check-thebook)
+            echo '{"ready":true,"claude_installed":true,"claude_path":"/usr/local/bin/claude","bin_exists":true,"bin_in_path":true,"symlink_exists":true,"symlink_works":true,"script_exists":true,"symlink_path":"'$HOME'/bin/thebook","script_path":"/Users/grot/thebook/scripts/thebook"}'
+            ;;
+        --setup-thebook)
+            echo '{"success":true,"changes_made":false,"symlink_path":"'$HOME'/bin/thebook"}'
+            ;;
         --validate-juce-path)
             # For test mode, validate the path was provided but return success
             if [ -n "$2" ]; then
@@ -569,6 +691,12 @@ case "${1:-}" in
     --check-pluginval)
         check_pluginval
         ;;
+    --check-thebook)
+        check_thebook
+        ;;
+    --setup-thebook)
+        setup_thebook
+        ;;
     --check-all)
         check_all
         ;;
@@ -584,6 +712,8 @@ Commands:
   --check-juce               Check for JUCE 8.0+ in standard locations
   --validate-juce-path PATH  Validate custom JUCE installation path
   --check-pluginval          Check for pluginval
+  --check-thebook            Check for thebook CLI command
+  --setup-thebook            Setup thebook CLI (create ~/bin, symlink, PATH)
   --check-all                Run all checks and output comprehensive JSON
 
 Test Mode:

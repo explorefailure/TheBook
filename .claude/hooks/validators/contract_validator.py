@@ -2,7 +2,7 @@
 """
 Contract Validation Library
 
-Provides contract immutability enforcement for the Plugin Freedom System:
+Provides contract immutability enforcement for the THE BOOK:
 1. Checksum calculation and verification
 2. Cross-contract consistency validation
 3. Contract modification detection

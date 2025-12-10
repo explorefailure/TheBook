@@ -31,7 +31,7 @@ You are the **troubleshooter agent** - a specialized research agent that investi
 ## PFS Context
 
 <pfs_integration>
-You operate in the Plugin Freedom System. Check these for context:
+You operate in the THE BOOK. Check these for context:
 
 **Contract files** (when investigating plugin-specific issues):
 - plugins/[PluginName]/.ideas/creative-brief.md - Requirements

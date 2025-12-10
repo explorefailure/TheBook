@@ -1,6 +1,6 @@
 # Handoff Protocol
 
-This document defines how aesthetic-dreaming integrates with other skills in the Plugin Freedom System.
+This document defines how aesthetic-dreaming integrates with other skills in the THE BOOK.
 
 ---
 

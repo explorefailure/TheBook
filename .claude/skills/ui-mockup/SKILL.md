@@ -1,23 +1,32 @@
 ---
 name: ui-mockup
-description: Orchestrator for WebView UI mockup workflow - delegates design iteration to ui-design-agent and implementation scaffolding to ui-finalization-agent. Use when user mentions UI design, mockup, WebView interface, or requests 'design UI for [plugin]'.
+description: Orchestrator for WebView UI design workflow. Default mode is Wireframe (user designs assets externally, we handle layout and integration). Also supports Full Auto (AI-designed mockups) and Aesthetic Templates. Use when user mentions UI design, mockup, wireframe, or 'design UI for [plugin]'.
 allowed-tools:
   - Read
   - Task
   - AskUserQuestion
+  - Glob
 preconditions:
   - None (can work standalone or with creative brief)
 ---
 
 <objective>
-Creates WebView UI mockups for audio plugins through iterative design and implementation scaffolding.
+Creates WebView UI for audio plugins. Three modes: Wireframe (default - user designs assets), Full Auto (AI designs everything), or Aesthetic Template (apply saved visual system).
 </objective>
 
 <quick_start>
-1. Check for aesthetic library (Phase 0)
-2. Gather requirements through tiered questions (Phases 1-3)
-3. Dispatch ui-design-agent for mockup generation
-4. Iterate until user approves
+**Wireframe Mode (Default):**
+1. Select design mode (Phase 0)
+2. Generate wireframe with labeled dimensions
+3. User designs assets externally (Photoshop, Figma, etc.)
+4. Integrate user's PNGs into functional UI
+5. Finalize and proceed to implementation
+
+**Full Auto Mode:**
+1. Select Full Auto in Phase 0
+2. Gather requirements (Phases 1-3)
+3. AI generates complete mockup
+4. Iterate until approved
 5. Generate implementation files
 </quick_start>
 
@@ -59,31 +68,115 @@ Creates WebView UI mockups for audio plugins through iterative design and implem
 Check for `.continue-here.md` existence to determine mode. If present, update state files. If absent, skip state updates.
 </context_detection>
 
-<phase name="0-aesthetic-check">
-Check if `.claude/aesthetics/manifest.json` exists. If found, count aesthetics using jq.
+<phase name="0-design-mode-selection">
+Present design mode options. Wireframe mode is the recommended default.
 
 <menu>
-Found {N} saved aesthetics in library.
+How would you like to design the UI?
 
-How would you like to start the UI design?
-1. Start from aesthetic template - Apply saved visual system
-2. Start from scratch - Create custom design
-3. List all aesthetics - Browse library before deciding
+1. Wireframe + My Assets (recommended)
+   → Generate layout wireframe with labeled dimensions
+   → You design elements externally (Photoshop, Figma, etc.)
+   → Provide transparent PNGs, I integrate into functional UI
+
+2. Full Auto Mockup
+   → AI generates complete design
+   → Iterate until satisfied
+
+3. From Aesthetic Template
+   → Apply saved visual system from library
 
 Choose (1-3): _
 </menu>
 
 <routing>
-- Option 1: Display aesthetics from manifest with metadata (name, vibe, colors, source). Invoke ui-template-library skill with "apply" operation. Skip to Phase 4 with generated mockup.
-- Option 2: Continue to Phase 1 (load context).
-- Option 3: Invoke ui-template-library skill with "list" operation, show previews, return to menu.
-- No aesthetics: Skip directly to Phase 1.
+- Option 1 (Wireframe): Continue to Phase 0.5-wireframe-source
+- Option 2 (Full Auto): Continue to Phase 1 (load context) - existing full mockup workflow
+- Option 3 (Aesthetic): Check if `.claude/aesthetics/manifest.json` exists. If found, invoke ui-template-library skill with "apply" operation. If not found, inform user no aesthetics saved and return to menu.
 </routing>
+</phase>
 
-See `references/aesthetic-integration.md` for complete integration details.
+<phase name="0.5-wireframe-source">
+Determine layout source for wireframe generation.
+
+<menu>
+Where should I get the layout from?
+
+1. Existing YAML mockup - Use positions from v[N]-ui.yaml
+2. Creative brief - Derive layout from parameters
+3. I'll specify manually - Provide positions in chat
+
+Choose (1-3): _
+</menu>
+
+<routing>
+- Option 1: Check for existing YAML, invoke ui-design-agent with mode=wireframe, source=yaml
+- Option 2: Check for creative-brief.md, invoke ui-design-agent with mode=wireframe, source=brief
+- Option 3: Collect positions from user, invoke ui-design-agent with mode=wireframe, source=manual
+</routing>
+</phase>
+
+<phase name="0.6-wireframe-iteration">
+After wireframe generated, present options.
+
+<menu>
+Wireframe v[N] created:
+- wireframe-v[N].html (layout reference)
+- asset-checklist.md (what to design)
+
+Files opened in browser.
+
+What's next?
+
+1. Adjust layout - Modify positions/sizes
+2. I'll design assets now - Come back when ready to integrate
+3. Assets are ready - Run integrate mode
+
+Choose (1-3): _
+</menu>
+
+<routing>
+- Option 1: Collect changes, invoke ui-design-agent with mode=wireframe again (v[N+1])
+- Option 2: Save state, inform user to return with "integrate assets for [PluginName]"
+- Option 3: Verify assets exist in plugins/[PluginName]/.ideas/assets/, invoke ui-design-agent with mode=integrate
+</routing>
+</phase>
+
+<phase name="0.7-integrate-assets">
+After user provides assets, integrate into functional UI.
+
+Invoke ui-design-agent with:
+- mode=integrate
+- plugin=[PluginName]
+- asset_path=plugins/[PluginName]/.ideas/assets/
+- wireframe_version=[N]
+
+Present result:
+
+<menu>
+UI integrated: [PluginName]-ui.html
+
+Opened in browser for testing.
+
+What's next?
+
+1. Iterate - Adjust layout or replace assets
+2. Finalize - Lock in design, proceed to implementation
+3. Save as template - Add visual system to aesthetic library
+
+Choose (1-3): _
+</menu>
+
+<routing>
+- Option 1: Return to Phase 0.6 or collect specific changes
+- Option 2: Update creative brief, proceed to Phase B (implementation scaffolding)
+- Option 3: Invoke ui-template-library skill with "save" operation, return to menu
+</routing>
 </phase>
 
 <phase name="1-load-context">
+**For Full Auto mode only** - Wireframe mode uses Phase 0.5-0.7 instead.
+
 Load context from creative brief and extract requirements.
 See `references/phase-details.md` for extraction protocol.
 See `references/context-extraction.md#example-extracting-from-creative-brief` for examples.

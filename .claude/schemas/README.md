@@ -1,6 +1,6 @@
 # JSON Schemas
 
-Unified JSON schemas for Plugin Freedom System data contracts.
+Unified JSON schemas for THE BOOK data contracts.
 
 ## Purpose
 
