@@ -10,17 +10,77 @@
 
 # THE BOOK
 
+> **This is a modified fork of [glittercowboy/plugin-freedom-system](https://github.com/glittercowboy/plugin-freedom-system)**
+>
+> Original system created by [TÂCHES](https://youtube.com/tachesteaches). This fork adds cross-platform builds, headless GUI workflow, and other enhancements.
+
 An AI-assisted JUCE plugin development system that enables conversational creation of professional VST3 and AU audio plugins for macOS. Design and build custom audio processors through natural dialogue with Claude Code—no programming experience required.
 
-**Created by [TÂCHES](https://youtube.com/tachesteaches)**
-
 [![Watch the Demo](https://img.shields.io/badge/▶_Watch_Demo-1.45hr_walkthrough-red?style=for-the-badge&logo=youtube)](https://youtu.be/RsZB1K8oH0c)
+
+---
+
+## What's New in This Fork
+
+### Cross-Platform Builds
+Build Windows and macOS VST3 plugins via GitHub Actions—no need for a Windows machine or JUCE installed on CI runners.
+
+```bash
+/build-cross-platform Bitcrusher
+```
+
+- Pushes to GitHub, triggers automated builds
+- Downloads Windows + macOS VST3 artifacts from Actions tab
+- Configurable plugin matrix in `.github/workflows/build-plugins.yml`
+
+### Headless GUI Workflow
+Skip custom UI design and test your DSP immediately using native DAW controls.
+
+```bash
+# During /implement, choose "headless" when prompted for GUI
+# Plugin uses native JUCE sliders/buttons instead of WebView
+```
+
+**Benefits:**
+- Test audio processing without waiting for UI implementation
+- All parameters exposed to DAW automation
+- Smaller binary, faster compile times
+- Add custom WebView UI later via `/improve`
+
+### Wireframe + External Assets Workflow
+Design your own graphics in Photoshop/Figma while the system handles layout and integration.
+
+```bash
+# During /dream UI design phase:
+# 1. Choose "Wireframe + My Assets" (default option)
+# 2. System generates wireframe with labeled dimensions
+# 3. You design PNG assets externally
+# 4. Place assets in plugins/[Name]/.ideas/assets/
+# 5. System integrates into functional WebView UI
+```
+
+**Benefits:**
+- Full creative control over visual design
+- Use professional design tools you already know
+- System handles the technical HTML/CSS/JS integration
+- Iterate on assets without rebuilding
+
+### Configurable JUCE Path
+CMakeLists.txt now supports `-DJUCE_PATH` for CI/CD environments:
+
+```cmake
+cmake -B build -DJUCE_PATH=/path/to/JUCE
+```
+
+Falls back to local paths if not specified.
+
+---
 
 ## Why This Exists
 
 Traditional plugin development demands deep expertise in C++, DSP algorithms, and the JUCE framework. This barrier keeps plugin creation restricted to experienced programmers, leaving musicians, producers, and sound designers dependent on commercial tools.
 
-The THE BOOK removes that barrier entirely.
+THE BOOK removes that barrier entirely.
 
 By enabling conversational plugin development, this system:
 
@@ -45,7 +105,7 @@ All plugins compile to native VST3/AU formats compatible with any DAW (Ableton, 
 Brainstorm your plugin concept through conversation:
 - **Creative brief** - Vision, sonic goals, UX principles
 - **Parameter specification** - All controls, ranges, and mappings
-- **UI mockups** - Visual design and layout
+- **UI mockups** - Visual design and layout (or skip for headless)
 
 ### 2. Plan (`/plan`)
 
@@ -59,7 +119,7 @@ Transform your specifications into a fully functional plugin through an automate
 
 - **Build System Ready** (Stage 1): Project structure, CMake configuration, and all parameters implemented - validated automatically
 - **Audio Engine Working** (Stage 2): DSP algorithms and audio processing complete - validated automatically
-- **UI Integrated** (Stage 3): WebView interface connected to audio engine (or skip for headless plugins) - validated automatically with runtime tests
+- **UI Integrated** (Stage 3): WebView interface connected to audio engine, OR headless native controls - validated automatically with runtime tests
 - After Stage 3 validation passes: Plugin complete, ready to install
 
 ### 4. Deploy & Iterate
@@ -67,11 +127,13 @@ Transform your specifications into a fully functional plugin through an automate
 - `/install-plugin` - Install to system folders for DAW use
 - `/test` - Run automated validation suite
 - `/improve` - Add features or fix bugs (with regression testing)
+- `/build-cross-platform` - Build for Windows + macOS via GitHub Actions
 - `/reconcile` - Reconcile state between planning and implementation
 
-## Modern Interface Design
+## GUI Options
 
-Plugins use web-based interfaces (HTML/CSS/JS) rendered via JUCE's WebView instead of traditional GUI frameworks. This enables:
+### WebView UI (Full Auto)
+AI generates complete modern web-based interfaces (HTML/CSS/JS) rendered via JUCE's WebView:
 
 - **Rapid prototyping**: See design changes instantly without rebuilding
 - **Modern aesthetics**: Leverage contemporary web design patterns and animations
@@ -79,14 +141,68 @@ Plugins use web-based interfaces (HTML/CSS/JS) rendered via JUCE's WebView inste
 - **Familiar tools**: Use web technologies many creators already understand
 - **Responsive layouts**: Easily adapt UIs to different sizes and contexts
 
-### GUI-Optional Workflow
+### WebView UI (Wireframe + Your Assets)
+You design the graphics, system handles the code. **(Default mode)**
 
-Plugins can skip custom UI and ship as "headless" plugins using DAW-provided controls:
+1. System generates wireframe with labeled dimensions and positions
+2. You create PNG assets in Photoshop, Figma, or any design tool
+3. Place transparent PNGs in `plugins/[Name]/.ideas/assets/`
+4. System integrates assets into functional WebView UI
 
-- **Faster iteration**: Test DSP immediately without waiting for UI implementation
-- **Progressive enhancement**: Add custom UI later via `/improve`
-- **Flexibility**: Decide when/if to build visual interface
-- **Zero overhead**: Smaller binary, faster compile, all parameters exposed to DAW
+**Benefits:**
+- Full creative control over every visual element
+- Use professional tools you already know
+- No CSS/HTML knowledge required
+- Iterate on graphics without touching code
+
+### Headless UI (Native Controls)
+Skip custom UI entirely and use native JUCE/DAW controls:
+
+- **Fastest iteration**: Test DSP immediately after Stage 2
+- **Zero design overhead**: No mockups, no HTML/CSS, no WebView
+- **Full DAW integration**: All parameters exposed for automation
+- **Smaller footprint**: Reduced binary size and faster compilation
+- **Progressive enhancement**: Add custom WebView UI later via `/improve`
+
+**When to use headless:**
+- Prototyping new DSP ideas
+- Simple utility plugins (gain, clipper, filter)
+- Testing before committing to visual design
+- Plugins where DAW controls are sufficient
+
+## Cross-Platform Distribution
+
+### GitHub Actions Workflow
+
+Build plugins for Windows and macOS without local cross-compilation:
+
+```bash
+# Trigger a cross-platform build
+/build-cross-platform MyPlugin
+
+# Or manually: push changes to trigger workflow
+git push origin main
+```
+
+**What happens:**
+1. GitHub Actions clones JUCE 8.0.3
+2. Builds VST3 for Windows and macOS in parallel
+3. Uploads artifacts for download
+
+**Download artifacts:**
+- Go to https://github.com/[you]/[repo]/actions
+- Select completed workflow run
+- Download `MyPlugin-Windows-VST3` and `MyPlugin-macOS-VST3`
+
+### Adding Plugins to Build Matrix
+
+Edit `.github/workflows/build-plugins.yml`:
+
+```yaml
+matrix:
+  os: [windows-latest, macos-latest]
+  plugin: [Bitcrusher, MyNewPlugin]  # Add new plugins here
+```
 
 ## Key Features
 
@@ -159,7 +275,7 @@ Each implementation stage runs in a fresh subagent context:
 
 - `foundation-shell-agent` (Stage 1) - Project structure and parameter management
 - `dsp-agent` (Stage 2) - Audio processing
-- `gui-agent` (Stage 3) - WebView UI
+- `gui-agent` (Stage 3) - WebView UI or headless native controls
 - `validation-agent` (after each stage) - Automatic validation with runtime tests
 
 **No context accumulation**: Clean separation prevents cross-contamination and keeps token usage minimal.
@@ -215,7 +331,7 @@ All other dependencies (Xcode Command Line Tools, JUCE, CMake, Python, pluginval
 /dream
 
 # Brainstorm your plugin idea through conversation
-# Creates: creative brief, parameter spec, UI mockups
+# Creates: creative brief, parameter spec, UI mockups (optional)
 
 # 2. Plan the architecture
 /plan
@@ -227,11 +343,21 @@ All other dependencies (Xcode Command Line Tools, JUCE, CMake, Python, pluginval
 /implement
 
 # Automated workflow builds the plugin
+# Choose "headless" at Stage 3 for fastest iteration
 
 # 4. Install and test
 /install-plugin YourPluginName
 
 # Plugin now available in your DAW
+```
+
+### Build for Windows
+
+```bash
+# After plugin works locally
+/build-cross-platform YourPluginName
+
+# Downloads available from GitHub Actions when complete
 ```
 
 ### Improve an Existing Plugin
@@ -282,6 +408,7 @@ All other dependencies (Xcode Command Line Tools, JUCE, CMake, Python, pluginval
 - `/install-plugin [Name]` - Install to system folders
 - `/uninstall [Name]` - Remove binaries (keep source)
 - `/show-standalone [Name]` - Preview UI in standalone mode
+- `/build-cross-platform [Name]` - Build Windows + macOS via GitHub Actions
 
 ### Lifecycle
 
@@ -304,7 +431,7 @@ thebook/
 │       │   ├── plan.md
 │       │   └── ui-mockups/
 │       ├── Source/                   # C++ implementation
-│       ├── WebUI/                    # HTML/CSS/JS interface
+│       ├── WebUI/                    # HTML/CSS/JS interface (if not headless)
 │       └── CMakeLists.txt
 ├── .claude/
 │   ├── skills/                       # Specialized workflows
@@ -315,6 +442,7 @@ thebook/
 │   │   ├── ui-mockup/                # Visual design system
 │   │   ├── plugin-testing/           # Validation suite
 │   │   ├── plugin-lifecycle/         # Install/uninstall/destroy
+│   │   ├── cross-platform-build/     # GitHub Actions builds
 │   │   ├── deep-research/            # 3-level investigation
 │   │   ├── troubleshooting-docs/     # Knowledge capture
 │   │   └── workflow-reconciliation/  # State consistency checks
@@ -329,6 +457,9 @@ thebook/
 │   │   └── troubleshoot-agent/       # Build failures
 │   ├── commands/                     # Slash command prompts
 │   └── hooks/                        # Validation gates
+├── .github/
+│   └── workflows/
+│       └── build-plugins.yml         # Cross-platform CI/CD
 ├── scripts/
 │   ├── build-and-install.sh          # 7-phase build pipeline
 │   └── verify-backup.sh              # Backup integrity checks
@@ -380,6 +511,9 @@ Every problem encountered becomes institutional knowledge. The system learns and
 - ✓ **Phase 5**: Validation System
 - ✓ **Phase 6**: WebView UI System
 - ✓ **Phase 7**: Polish & Enhancement
+- ✓ **Phase 8**: Cross-Platform Builds (this fork)
+- ✓ **Phase 9**: Headless GUI Workflow (this fork)
+- ✓ **Phase 10**: Wireframe + External Assets Workflow (this fork)
 
 **System status**: Production ready.
 
@@ -398,6 +532,10 @@ Every problem encountered becomes institutional knowledge. The system learns and
 - CMake 3.15+ (build system)
 - pluginval (plugin validation tool)
 - Git
+
+**For cross-platform builds:**
+- GitHub account
+- Repository with GitHub Actions enabled
 
 ### Hardware
 
@@ -426,6 +564,8 @@ Built with:
 - [JUCE](https://juce.com/) - Cross-platform audio application framework
 - [Claude Code](https://claude.com/claude-code) - AI-assisted development environment
 - [Anthropic](https://anthropic.com/) - Claude AI models
+
+Original system by [TÂCHES](https://youtube.com/tachesteaches) - [plugin-freedom-system](https://github.com/glittercowboy/plugin-freedom-system)
 
 ---
 
