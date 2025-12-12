@@ -241,6 +241,24 @@ Dual-indexed troubleshooting database (`troubleshooting/`) captures solutions to
 
 **Required Reading** (`juce8-critical-patterns.md`) automatically prevents repeat mistakes by injecting proven patterns into all subagent contexts.
 
+### DSP Patterns Library
+
+Reusable DSP research automatically extracted from successful plugins:
+
+```bash
+# Research a DSP topic
+/research-dsp compression
+
+# View saved patterns
+ls .claude/skills/dsp-patterns/patterns/
+```
+
+**Auto-extraction:** After pluginval passes, new DSP techniques are automatically saved to the patterns library. Future plugins can reference this knowledge.
+
+**Current patterns:** oversampling, wave-folding, dc-blocking, dry-wet-mixing
+
+**Manual control:** Say "remove the [name] pattern" to delete unwanted patterns.
+
 ### Graduated Research Protocol
 
 3-level investigation system (`/research`) for complex problems:
@@ -417,6 +435,7 @@ All other dependencies (Xcode Command Line Tools, JUCE, CMake, Python, pluginval
 
 - `/test [Name]` - Run automated validation suite
 - `/research [topic]` - Deep investigation (3-level protocol)
+- `/research-dsp [topic]` - Research DSP techniques and save to patterns library
 - `/doc-fix` - Document solved problems for knowledge base
 - `/add-critical-pattern` - Add current problem to Required Reading
 
@@ -460,6 +479,7 @@ thebook/
 │   │   ├── plugin-testing/           # Validation suite
 │   │   ├── plugin-lifecycle/         # Install/uninstall/destroy
 │   │   ├── cross-platform-build/     # GitHub Actions builds
+│   │   ├── dsp-patterns/             # Reusable DSP research library
 │   │   ├── deep-research/            # 3-level investigation
 │   │   ├── troubleshooting-docs/     # Knowledge capture
 │   │   └── workflow-reconciliation/  # State consistency checks
