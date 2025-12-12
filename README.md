@@ -10,9 +10,9 @@
 
 # THE BOOK
 
-> **This is a modified fork of [glittercowboy/plugin-freedom-system](https://github.com/glittercowboy/plugin-freedom-system)**
+> **This is an expirimental modified fork of [glittercowboy/plugin-freedom-system](https://github.com/glittercowboy/plugin-freedom-system)**
 >
-> Original system created by [TÂCHES](https://youtube.com/tachesteaches). This fork adds cross-platform builds, headless GUI workflow, and other enhancements.
+> Original system created by [TÂCHES](https://youtube.com/tachesteaches). This fork adds cross-platform builds, headless GUI workflow, and other enhancements.(Experimental Build Use at own risk)
 
 An AI-assisted JUCE plugin development system that enables conversational creation of professional VST3 and AU audio plugins for macOS. Design and build custom audio processors through natural dialogue with Claude Code—no programming experience required.
 
