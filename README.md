@@ -80,6 +80,23 @@ Design your own graphics in Photoshop/Figma while the system handles layout and 
 - System handles the technical HTML/CSS/JS integration
 - Iterate on assets without rebuilding
 
+### DSP Patterns Library
+Research builds on itself. DSP knowledge is automatically saved and reused across plugins.
+
+```bash
+# Research a topic manually
+/research-dsp compression
+
+# Auto-extraction: After pluginval passes, new techniques are saved automatically
+```
+
+**How it works:**
+- After each successful plugin build, new DSP patterns are extracted
+- Future plugins reference this knowledge during `/plan`
+- Say "remove the [name] pattern" to delete unwanted patterns
+
+**Current patterns:** oversampling, wave-folding, dc-blocking, dry-wet-mixing
+
 ### Configurable JUCE Path
 CMakeLists.txt now supports `-DJUCE_PATH` for CI/CD environments:
 
