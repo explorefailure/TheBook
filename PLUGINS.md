@@ -5,6 +5,7 @@
 | Plugin Name | Status | Version | Type | Last Updated |
 |-------------|--------|---------|------|--------------|
 | Bitcrusher | 📦 Installed | 1.0.0 | Audio Effect (Lo-Fi) | 2025-12-10 |
+| WaveFolder | 🚧 Stage 0 | - | Audio Effect (Waveshaper) | 2025-12-12 |
 
 ## State Legend
 
