@@ -12,5 +12,8 @@
   "juce_version": "8.0.4",
   "pluginval_path": "/Users/grot/bin/pluginval",
   "pluginval_version": "1.0.3",
-  "validated_at": "2025-12-05T12:00:00Z"
+  "validated_at": "2025-12-05T12:00:00Z",
+  "plugins_repo": "/Users/grot/Plugins",
+  "plugins_path": "/Users/grot/Plugins/plugins",
+  "github_repo": "explorefailure/Plugins"
 }

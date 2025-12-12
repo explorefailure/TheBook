@@ -24,12 +24,29 @@ An AI-assisted JUCE plugin development system that enables conversational creati
 Build Windows and macOS VST3 plugins via GitHub Actions—no need for a Windows machine or JUCE installed on CI runners.
 
 ```bash
-/build-cross-platform Bitcrusher
+/publish WaveFolder
 ```
 
 - Pushes to GitHub, triggers automated builds
 - Downloads Windows + macOS VST3 artifacts from Actions tab
 - Configurable plugin matrix in `.github/workflows/build-plugins.yml`
+
+### Dual-Repo Architecture
+Plugins are developed in a separate repo with GitHub Actions for CI/CD:
+
+```
+/Users/grot/thebook/     <- THE BOOK framework (skills, agents, workflows)
+    └── plugins/         <- Symlink to Plugins repo
+
+/Users/grot/Plugins/     <- Your plugins (GitHub: explorefailure/Plugins)
+    ├── plugins/         <- All plugin source code
+    └── .github/         <- GitHub Actions for multi-OS builds
+```
+
+**Benefits:**
+- One source of truth for plugin code
+- Push triggers Windows + macOS builds automatically
+- Framework updates separate from plugin code
 
 ### Headless GUI Workflow
 Skip custom UI design and test your DSP immediately using native DAW controls.
@@ -175,11 +192,11 @@ Skip custom UI entirely and use native JUCE/DAW controls:
 Build plugins for Windows and macOS without local cross-compilation:
 
 ```bash
-# Trigger a cross-platform build
-/build-cross-platform MyPlugin
+# Publish and trigger builds
+/publish MyPlugin
 
-# Or manually: push changes to trigger workflow
-git push origin main
+# Or manually: push changes to Plugins repo
+cd /Users/grot/Plugins && git push origin main
 ```
 
 **What happens:**
@@ -188,18 +205,19 @@ git push origin main
 3. Uploads artifacts for download
 
 **Download artifacts:**
-- Go to https://github.com/[you]/[repo]/actions
+- Go to https://github.com/explorefailure/Plugins/actions
 - Select completed workflow run
 - Download `MyPlugin-Windows-VST3` and `MyPlugin-macOS-VST3`
 
 ### Adding Plugins to Build Matrix
 
-Edit `.github/workflows/build-plugins.yml`:
+The `/publish` command automatically adds plugins to the build matrix. Manual edit:
 
 ```yaml
+# /Users/grot/Plugins/.github/workflows/build-plugins.yml
 matrix:
   os: [windows-latest, macos-latest]
-  plugin: [Bitcrusher, MyNewPlugin]  # Add new plugins here
+  plugin: [Bitcrusher, WaveFolder, MyNewPlugin]
 ```
 
 ## Key Features
@@ -353,9 +371,10 @@ All other dependencies (Xcode Command Line Tools, JUCE, CMake, Python, pluginval
 
 ```bash
 # After plugin works locally
-/build-cross-platform YourPluginName
+/publish YourPluginName
 
 # Downloads available from GitHub Actions when complete
+# https://github.com/explorefailure/Plugins/actions
 ```
 
 ### Improve an Existing Plugin
@@ -406,7 +425,7 @@ All other dependencies (Xcode Command Line Tools, JUCE, CMake, Python, pluginval
 - `/install-plugin [Name]` - Install to system folders
 - `/uninstall [Name]` - Remove binaries (keep source)
 - `/show-standalone [Name]` - Preview UI in standalone mode
-- `/build-cross-platform [Name]` - Build Windows + macOS via GitHub Actions
+- `/publish [Name]` - Push to GitHub and trigger Windows + macOS builds
 
 ### Lifecycle
 
@@ -420,7 +439,7 @@ All other dependencies (Xcode Command Line Tools, JUCE, CMake, Python, pluginval
 
 ```
 thebook/
-├── plugins/                          # Plugin source code
+├── plugins/                          # Symlink → /Users/grot/Plugins/plugins
 │   └── [PluginName]/
 │       ├── .ideas/                   # Contracts (immutable during impl)
 │       │   ├── creative-brief.md
