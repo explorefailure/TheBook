@@ -805,6 +805,55 @@ overrides:
 
 This allows users to suppress false positives while maintaining visibility.
 
+## DSP Pattern Extraction
+
+After pluginval passes (exit code 0), automatically extract new DSP patterns for the knowledge base.
+
+### When to Extract
+
+- **Trigger:** pluginval passes at any stage (smoke, functional, or full)
+- **Location:** `.claude/skills/dsp-patterns/patterns/`
+- **Skip if:** All DSP techniques already have patterns
+
+### Extraction Process
+
+1. **Read architecture.md** - Identify DSP components and techniques used
+2. **Read PluginProcessor.cpp** - Get working implementation code
+3. **Check existing patterns:**
+   ```bash
+   ls .claude/skills/dsp-patterns/patterns/
+   ```
+4. **For each NEW technique:**
+   - Create pattern file following template in `dsp-patterns/SKILL.md`
+   - Generalize code (remove plugin-specific names)
+   - Include gotchas discovered during implementation
+5. **Notify user:** "Extracted new pattern: [name]"
+
+### What Counts as New
+
+Check by DSP concept, not just filename:
+- "saturation" and "soft-clipping" might be the same pattern
+- "oversampling" already exists → skip
+- "ring modulation" doesn't exist → extract
+
+### Example Extraction
+
+From WaveFolder's architecture.md:
+- Oversampling → already exists, skip
+- Wave folding transfer functions → NEW, extract
+- DC blocking → already exists, skip
+- Dry/wet mixing → already exists, skip
+
+Result: Extract `wave-folding.md` only.
+
+### Pattern File Location
+
+```
+.claude/skills/dsp-patterns/patterns/[technique-name].md
+```
+
+Use kebab-case (e.g., `ring-modulation.md`, `envelope-follower.md`).
+
 ## Best Practices
 
 1. **Combine semantic + runtime validation** - Check code patterns AND binary behavior

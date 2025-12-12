@@ -12,6 +12,34 @@ Activate when user:
 - Runs `/research-dsp [topic]`
 - Says "save this research", "add to DSP patterns", "remember this for later"
 - Asks about DSP topics during `/dream` or `/plan`
+- Says "remove pattern", "delete pattern" (for cleanup)
+
+## Auto-Extraction Rules
+
+**After pluginval passes**, automatically extract new DSP patterns:
+
+1. Read the plugin's `architecture.md` for DSP concepts used
+2. Read `PluginProcessor.cpp` for working implementation
+3. Check existing patterns - only save NEW concepts
+4. Generate pattern file with generalized, reusable code
+5. Notify user: "Extracted new pattern: [name]"
+
+**What counts as "new":**
+- DSP technique not already in `.claude/skills/dsp-patterns/patterns/`
+- Check by concept, not just filename (e.g., "saturation" and "soft-clipping" might overlap)
+
+**Skip extraction if:**
+- All techniques already have patterns
+- Plugin is too simple (e.g., just gain staging)
+
+## Manual Removal
+
+User can remove any pattern by asking:
+- "remove the [name] pattern"
+- "delete [name] from patterns"
+- "I don't want the [name] pattern"
+
+Just delete the file from `patterns/` directory.
 
 ## Usage
 
