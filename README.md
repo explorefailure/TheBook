@@ -35,13 +35,15 @@ Build Windows and macOS VST3 plugins via GitHub Actions—no need for a Windows 
 Plugins are developed in a separate repo with GitHub Actions for CI/CD:
 
 ```
-/Users/grot/thebook/     <- THE BOOK framework (skills, agents, workflows)
+~/thebook/               <- THE BOOK framework (skills, agents, workflows)
     └── plugins/         <- Symlink to Plugins repo
 
-/Users/grot/Plugins/     <- Your plugins (GitHub: explorefailure/Plugins)
+~/Plugins/               <- Your plugins (GitHub: {username}/Plugins)
     ├── plugins/         <- All plugin source code
     └── .github/         <- GitHub Actions for multi-OS builds
 ```
+
+**Note:** Run `/setup` to configure your GitHub username and Plugins repo.
 
 **Benefits:**
 - One source of truth for plugin code
@@ -216,7 +218,7 @@ Build plugins for Windows and macOS without local cross-compilation:
 /publish MyPlugin
 
 # Or manually: push changes to Plugins repo
-cd /Users/grot/Plugins && git push origin main
+cd ~/Plugins && git push origin main
 ```
 
 **What happens:**
@@ -225,7 +227,7 @@ cd /Users/grot/Plugins && git push origin main
 3. Uploads artifacts for download
 
 **Download artifacts:**
-- Go to https://github.com/explorefailure/Plugins/actions
+- Go to your GitHub repo's Actions tab (e.g., `https://github.com/{username}/Plugins/actions`)
 - Select completed workflow run
 - Download `MyPlugin-Windows-VST3` and `MyPlugin-macOS-VST3`
 
@@ -234,7 +236,7 @@ cd /Users/grot/Plugins && git push origin main
 The `/publish` command automatically adds plugins to the build matrix. Manual edit:
 
 ```yaml
-# /Users/grot/Plugins/.github/workflows/build-plugins.yml
+# ~/Plugins/.github/workflows/build-plugins.yml
 matrix:
   os: [windows-latest, macos-latest]
   plugin: [Bitcrusher, WaveFolder, MyNewPlugin]
@@ -412,7 +414,7 @@ All other dependencies (Xcode Command Line Tools, JUCE, CMake, Python, pluginval
 /publish YourPluginName
 
 # Downloads available from GitHub Actions when complete
-# https://github.com/explorefailure/Plugins/actions
+# https://github.com/{username}/Plugins/actions
 ```
 
 ### Improve an Existing Plugin
@@ -478,7 +480,7 @@ All other dependencies (Xcode Command Line Tools, JUCE, CMake, Python, pluginval
 
 ```
 thebook/
-├── plugins/                          # Symlink → /Users/grot/Plugins/plugins
+├── plugins/                          # Symlink → ~/Plugins/plugins
 │   └── [PluginName]/
 │       ├── .ideas/                   # Contracts (immutable during impl)
 │       │   ├── creative-brief.md

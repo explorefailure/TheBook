@@ -13,14 +13,16 @@ Invoke the `plugin-publish` skill to push this plugin to GitHub and trigger Wind
 ## Context
 
 - Plugin: $ARGUMENTS.PluginName
-- Plugins repo: /Users/grot/Plugins
-- GitHub: explorefailure/Plugins (private)
+- GitHub repo: Read `github_plugins_repo` from `.claude/system-config.json`
 
 ## Instructions
 
-1. Verify plugin is complete (✅ Working or 📦 Installed in PLUGINS.md)
-2. Check if plugin is in GitHub Actions build matrix
-3. Add to matrix if missing
-4. Commit any uncommitted changes
-5. Push to trigger builds
-6. Report status with link to GitHub Actions
+1. **Check GitHub configuration first:**
+   - Read `.claude/system-config.json` for `github_plugins_repo`
+   - If not configured, tell user to run `/setup` and STOP
+2. Verify plugin is complete (✅ Working or 📦 Installed in PLUGINS.md)
+3. Check if plugin is in GitHub Actions build matrix
+4. Add to matrix if missing
+5. Commit any uncommitted changes
+6. Push to trigger builds
+7. Report status with link to GitHub Actions (using repo from config)

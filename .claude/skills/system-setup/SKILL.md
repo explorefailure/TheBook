@@ -157,6 +157,7 @@ Setup Progress:
 - [ ] JUCE 8.0.0+ installed and verified
 - [ ] pluginval installed and verified (optional)
 - [ ] thebook CLI command configured
+- [ ] GitHub configured (username and Plugins repo)
 - [ ] Configuration saved to .claude/system-config.json
 - [ ] Setup complete
 ```
@@ -380,6 +381,116 @@ bash .claude/skills/system-setup/assets/system-check.sh --check-thebook ${TEST_M
 
 ---
 
+## Step 8: GitHub Configuration
+
+**Purpose:** Configure GitHub for pushing plugins and cross-platform builds.
+
+**Check command:**
+```bash
+bash .claude/skills/system-setup/assets/system-check.sh --check-github ${TEST_MODE:+--test=$TEST_MODE}
+```
+
+**Returns JSON:**
+```json
+{
+  "gh_installed": true,
+  "gh_path": "/usr/local/bin/gh",
+  "gh_authenticated": true,
+  "gh_username": "yourusername"
+}
+```
+
+**Validation logic:**
+
+1. **Check if GitHub CLI (gh) is installed:**
+   - If `gh_installed: false`:
+     - **Automated mode:** Offer to install via Homebrew
+       ```bash
+       brew install gh
+       ```
+     - **Guided mode:** Show installation instructions
+       ```
+       GitHub CLI (gh) is not installed.
+
+       To install:
+         brew install gh
+
+       Or download from: https://cli.github.com/
+       ```
+     - **Check-only mode:** Report as missing, continue
+
+2. **Check GitHub authentication:**
+   - If `gh_authenticated: false`:
+     ```
+     GitHub CLI is installed but not authenticated.
+
+     Would you like to authenticate now?
+     1. Yes, log in with browser (gh auth login)
+     2. Skip for now (can authenticate later)
+     ```
+     - If user chooses 1:
+       ```bash
+       gh auth login --web
+       ```
+
+3. **Ask for GitHub username for Plugins repo:**
+   ```
+   GitHub Configuration
+
+   What is your GitHub username? This is used for:
+   - Pushing plugin code to your repo
+   - Cross-platform builds via GitHub Actions
+
+   Enter GitHub username: _
+   ```
+
+   - Store as `github_username` in config
+
+4. **Confirm Plugins repo name:**
+   ```
+   Your plugins will be pushed to: {username}/Plugins
+
+   Is this correct?
+   1. Yes, use {username}/Plugins
+   2. No, I'll specify a different repo name
+   ```
+
+   - If option 2, ask for custom repo name
+   - Store as `github_plugins_repo` in config
+
+5. **Verify repo exists (optional):**
+   ```bash
+   gh repo view {username}/Plugins --json name 2>/dev/null
+   ```
+   - If repo doesn't exist:
+     ```
+     Repository {username}/Plugins doesn't exist yet.
+
+     Would you like to create it?
+     1. Yes, create private repo
+     2. Yes, create public repo
+     3. Skip (I'll create it manually later)
+     ```
+   - If user chooses 1 or 2:
+     ```bash
+     gh repo create {username}/Plugins --private  # or --public
+     ```
+
+6. **Important:** GitHub configuration is REQUIRED for `/publish` to work. If skipped:
+   - `/publish` will check for `github_plugins_repo` in system-config.json
+   - If not found, it will prompt user to run `/setup` first
+   - This prevents accidental pushes to wrong repositories
+
+7. **Save to config:**
+   ```json
+   {
+     "github_username": "yourusername",
+     "github_plugins_repo": "yourusername/Plugins"
+   }
+   ```
+
+---
+
 ## Configuration Persistence
 
 After all dependencies are validated, create `.claude/system-config.json`:
@@ -396,11 +507,13 @@ cat > .claude/system-config.json <<EOF
   "xcode_path": "/Library/Developer/CommandLineTools",
   "cmake_path": "/usr/local/bin/cmake",
   "cmake_version": "3.27.4",
-  "juce_path": "/Users/lex/JUCE",
+  "juce_path": "/Users/username/JUCE",
   "juce_version": "8.0.3",
   "pluginval_path": "/usr/local/bin/pluginval",
   "pluginval_version": "1.0.3",
   "thebook_command": "~/bin/thebook",
+  "github_username": "yourusername",
+  "github_plugins_repo": "yourusername/Plugins",
   "validated_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 }
 EOF
@@ -428,9 +541,10 @@ Dependencies validated:
 ✓ Python 3.11.5 (/usr/local/bin/python3)
 ✓ Xcode Command Line Tools 15.0
 ✓ CMake 3.27.4 (/usr/local/bin/cmake)
-✓ JUCE 8.0.3 (/Users/lex/JUCE)
+✓ JUCE 8.0.3 (/Users/username/JUCE)
 ✓ pluginval 1.0.3 (/usr/local/bin/pluginval)
 ✓ thebook CLI (~/bin/thebook)
+✓ GitHub: yourusername/Plugins
 
 Configuration saved to:
 .claude/system-config.json

@@ -14,6 +14,28 @@ Activate when user:
 - Plugin must be in `✅ Working` or `📦 Installed` state (check PLUGINS.md)
 - Plugin source must exist in `plugins/[PluginName]/`
 - GitHub CLI authenticated (`gh auth status`)
+- **GitHub must be configured in system-config.json** (run `/setup` if not)
+
+## GitHub Configuration Check
+
+**CRITICAL:** Before any publish operation, check that GitHub is configured:
+
+```bash
+# Read github_plugins_repo from config
+cat .claude/system-config.json | jq -r '.github_plugins_repo'
+```
+
+**If `github_plugins_repo` is missing or null:**
+```
+GitHub is not configured for publishing.
+
+Please run /setup to configure your GitHub username and Plugins repository.
+
+This prevents accidental pushes to the wrong repository.
+```
+**STOP and do not proceed with publish.**
+
+**If configured, use the repo from config for all GitHub operations.**
 
 ## Workflow
 
@@ -59,7 +81,7 @@ git push origin main
 ### 4. Report Status
 
 After push:
-1. Provide link to GitHub Actions: `https://github.com/explorefailure/Plugins/actions`
+1. Provide link to GitHub Actions: `https://github.com/{github_plugins_repo}/actions` (read repo from system-config.json)
 2. Explain builds run on Windows and macOS
 3. Mention artifacts will be available for download when complete
 
@@ -74,7 +96,7 @@ The workflow (`build-plugins.yml`) does:
 ## Manual Trigger
 
 Users can also trigger builds manually:
-1. Go to https://github.com/explorefailure/Plugins/actions
+1. Go to `https://github.com/{github_plugins_repo}/actions` (use repo from system-config.json)
 2. Select "Build Plugins" workflow
 3. Click "Run workflow"
 
@@ -101,7 +123,7 @@ GitHub Actions is now building WaveFolder for:
 - Windows (VST3)
 - macOS (VST3)
 
-View progress: https://github.com/explorefailure/Plugins/actions
+View progress: https://github.com/{github_plugins_repo}/actions
 
 When complete, download artifacts from the workflow run.
 ```
