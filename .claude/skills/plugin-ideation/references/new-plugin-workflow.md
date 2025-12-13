@@ -172,6 +172,28 @@ Examples:
 - If user provides invalid name, suggest cleaned version
 </step>
 
+## Phase 5.5: Company Name
+
+<step number="5.5" required="true">
+**Must ask for company name via AskUserQuestion:**
+
+```
+Question:
+  question: "What company name should appear in the plugin?"
+  header: "Company"
+  options:
+    - label: "Choose Your Own Adventure", description: "Default company name"
+    - label: "Other", description: "I'll provide my own company name"
+```
+
+**Company name is stored in creative-brief.md and used in CMakeLists.txt during implementation.**
+
+**Also generate PLUGIN_MANUFACTURER_CODE:**
+- Take first 2 letters of first word + first 2 letters of second word
+- If single word, take first 4 letters
+- Examples: "Choose Your Own Adventure" → "ChYo", "Grot Audio" → "GrAu", "MyCompany" → "MyCo"
+</step>
+
 ## Phase 6: Document Creation
 
 <step number="6" required="true">
@@ -187,6 +209,8 @@ Examples:
 
 **Type:** [Effect/Synth/Utility]
 **Core Concept:** [One-sentence description]
+**Company:** [Company Name]
+**Manufacturer Code:** [4-char code]
 **Status:** 💡 Ideated
 **Created:** [Date]
 

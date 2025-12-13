@@ -106,6 +106,9 @@ cmake -B build -DJUCE_PATH=/path/to/JUCE
 
 Falls back to local paths if not specified.
 
+### Custom Company Name
+During `/dream`, you'll be asked for the company name that appears in your plugin. Default is "Choose Your Own Adventure" but you can specify any name per-plugin.
+
 ---
 
 ## Why This Exists
