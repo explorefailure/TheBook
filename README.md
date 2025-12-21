@@ -111,6 +111,24 @@ Falls back to local paths if not specified.
 ### Custom Company Name
 During `/dream`, you'll be asked for the company name that appears in your plugin. Default is "Choose Your Own Adventure" but you can specify any name per-plugin.
 
+### Context-Aware Startup
+Session startup now shows where you left off. After environment validation, `/startup` runs automatically:
+
+```
+████████╗██╗  ██╗███████╗    ██████╗  ██████╗  ██████╗ ██╗  ██╗
+...
+        A CHOOSE YOUR OWN AU/VST PLUGIN ADVENTURE
+
+Last: ChopShop (Stage 2 - DSP)
+→ /continue ChopShop
+
+⚠️ Uncommitted changes
+```
+
+- Shows last checkpoint (if any active work)
+- Warns about uncommitted changes
+- Suggests next action (`/continue` or `/dream`)
+
 ---
 
 ## Why This Exists

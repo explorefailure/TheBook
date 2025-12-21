@@ -30,7 +30,8 @@ THE BOOK - A Choose Your Own AU/VST Plugin Adventure
 
 Usage:
   thebook              Launch Claude Code with THE BOOK title page
-  thebook titlepage    Display the title page directly (no Claude)
+  thebook startup      Display ASCII banner only
+  thebook titlepage    Display the full title page (no Claude)
   thebook --version    Show version information
   thebook --help       Show this help message
 
@@ -45,6 +46,18 @@ EOF
 show_version() {
     echo "thebook version $VERSION"
     echo "THE BOOK directory: $THEBOOK_DIR"
+}
+
+show_startup() {
+    cat << 'EOF'
+████████╗██╗  ██╗███████╗    ██████╗  ██████╗  ██████╗ ██╗  ██╗
+╚══██╔══╝██║  ██║██╔════╝    ██╔══██╗██╔═══██╗██╔═══██╗██║ ██╔╝
+   ██║   ███████║█████╗      ██████╔╝██║   ██║██║   ██║█████╔╝
+   ██║   ██╔══██║██╔══╝      ██╔══██╗██║   ██║██║   ██║██╔═██╗
+   ██║   ██║  ██║███████╗    ██████╔╝╚██████╔╝╚██████╔╝██║  ██╗
+   ╚═╝   ╚═╝  ╚═╝╚══════╝    ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝
+        A CHOOSE YOUR OWN AU/VST PLUGIN ADVENTURE
+EOF
 }
 
 show_titlepage() {
@@ -182,6 +195,10 @@ case "${1:-}" in
         show_titlepage
         exit 0
         ;;
+    startup)
+        show_startup
+        exit 0
+        ;;
 esac
 
 # Check if Claude Code is installed
@@ -205,4 +222,4 @@ fi
 
 # Launch Claude Code in thebook context with title page
 cd "$THEBOOK_DIR"
-claude "/titlepage"
+claude
